@@ -1,0 +1,1603 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07040c">
+<title>HEXSLINGER 魔弾決闘 ― 黄昏の早撃ち</title>
+<meta name="description" content="西部劇×魔法のリアルタイム早撃ちデュエル。印を刻んで魔弾を放ち、迫る敵弾は相殺・反魔法・プロテゴで迎え撃て。特殊魔法5種、全10ステージ、最後は黄昏の魔弾卿。">
+<meta property="og:title" content="HEXSLINGER 魔弾決闘 ― 黄昏の早撃ち">
+<meta property="og:description" content="印を刻んで魔弾を放て。相殺・反魔法・プロテゴで迎え撃つリアルタイム魔法デュエル。全10ステージ。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://red-freegames.github.io/hexslinger/">
+<meta property="og:image" content="https://red-freegames.github.io/hexslinger/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://red-freegames.github.io/hexslinger/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Rye&family=Shippori+Mincho+B1:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;
+  --ink:#f6ead6; --dim:#b8a58b; --gold:#f5c66e; --gold2:#ffe3a3;
+  --cyan:#5cf2ff; --crimson:#ff3a5e; --ice:#9fd8ff;
+  --glass:rgba(16,10,26,.46); --edge:rgba(255,214,150,.20);
+  --serif:'Shippori Mincho B1',serif; --cin:'Cinzel',serif; --rye:'Rye',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#07040c;overflow:hidden;color:var(--ink);font-family:var(--serif);user-select:none;-webkit-user-select:none}
+canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hide{display:none!important}
+.glass{
+  background:linear-gradient(140deg,rgba(255,255,255,.10),rgba(255,255,255,.015) 45%,rgba(255,255,255,.04)),var(--glass);
+  backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);
+  border:1px solid var(--edge);border-radius:16px;
+  box-shadow:0 18px 50px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.10),inset 0 0 0 1px rgba(0,0,0,.25);
+}
+
+/* ---------- HUD ---------- */
+#hud{position:fixed;left:0;right:0;top:0;display:flex;align-items:flex-start;justify-content:space-between;padding:18px 26px;pointer-events:none;gap:16px}
+.plate{width:min(440px,38vw);padding:12px 16px 12px}
+.plate .row1{display:flex;align-items:baseline;gap:10px}
+.plate.e .row1{flex-direction:row-reverse}
+.tag{font-family:var(--cin);font-weight:900;font-size:11px;letter-spacing:.25em;padding:3px 8px;border-radius:6px}
+.p .tag{color:#04202a;background:linear-gradient(90deg,#5cf2ff,#b2fff0);box-shadow:0 0 14px rgba(92,242,255,.6)}
+.e .tag{color:#2a0410;background:linear-gradient(90deg,#ffb36b,#ff3a5e);box-shadow:0 0 14px rgba(255,58,94,.6)}
+.pname{font-weight:800;font-size:15px;letter-spacing:.06em}
+.pname small{font-family:var(--cin);font-size:10px;color:var(--dim);letter-spacing:.2em;margin-left:6px}
+.hpwrap{display:flex;align-items:center;gap:10px;margin-top:9px}
+.e .hpwrap{flex-direction:row-reverse}
+.hpbar{position:relative;flex:1;height:16px;border-radius:9px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.12);overflow:hidden}
+.e .hpbar{transform:scaleX(-1)}
+.hpbar>div{position:absolute;left:0;top:0;bottom:0;border-radius:9px}
+.hpbar .ghost{background:rgba(255,240,220,.65)}
+.p .hpbar .fill{background:linear-gradient(90deg,#0aa9c9,#5cf2ff 60%,#c9fff4);box-shadow:0 0 16px rgba(92,242,255,.75)}
+.e .hpbar .fill{background:linear-gradient(90deg,#a3102f,#ff3a5e 60%,#ffc08a);box-shadow:0 0 16px rgba(255,58,94,.75)}
+.hpbar .fill:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 14px,rgba(0,0,0,.28) 14px 15px)}
+.hpnum{font-family:var(--cin);font-weight:900;font-size:22px;min-width:64px;text-align:center;text-shadow:0 0 12px rgba(255,255,255,.35)}
+.status{display:flex;gap:6px;margin-top:8px;min-height:22px;flex-wrap:wrap}
+.e .status{justify-content:flex-end}
+.chip{font-size:11px;font-weight:700;letter-spacing:.06em;padding:3px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.35)}
+.chip.pr{color:#bff9ff;border-color:rgba(92,242,255,.6);box-shadow:0 0 12px rgba(92,242,255,.45)}
+.chip.fz{color:#d6efff;border-color:rgba(159,216,255,.7);background:rgba(60,110,170,.35)}
+.chip.cs{color:var(--gold2);border-color:rgba(245,198,110,.6)}
+.chip.ct{color:#ffd0d8;border-color:rgba(255,58,94,.7);background:rgba(120,10,30,.35)}
+#mid{text-align:center;padding-top:6px;min-width:150px}
+#mid .duel{font-family:var(--rye);font-size:30px;color:var(--gold2);letter-spacing:.12em;text-shadow:0 0 8px #ff9b3d,0 0 26px rgba(255,120,40,.7)}
+#mid .sub{font-family:var(--cin);font-size:10px;letter-spacing:.4em;color:var(--dim);margin-top:2px}
+#mid .inc{margin-top:8px;font-family:var(--cin);font-weight:700;font-size:13px;letter-spacing:.18em;color:#ffb3c0;min-height:18px;text-shadow:0 0 10px rgba(255,58,94,.8)}
+
+/* ---------- Deck ---------- */
+#deck{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);display:flex;gap:12px;pointer-events:auto}
+.card{position:relative;width:150px;height:106px;padding:10px 12px;cursor:pointer;overflow:hidden;transition:transform .15s,border-color .15s,box-shadow .15s}
+.card:before{content:"";position:absolute;inset:0;border-radius:16px;background:radial-gradient(120% 90% at 85% 0%,rgb(var(--c) / .28),transparent 60%);pointer-events:none}
+.card:hover{transform:translateY(-4px);border-color:rgb(var(--c) / .7)}
+.card.casting{transform:translateY(-8px);border-color:rgb(var(--c));box-shadow:0 0 0 1px rgb(var(--c) / .6),0 0 30px rgb(var(--c) / .55),0 18px 50px rgba(0,0,0,.5)}
+.card .key{position:absolute;left:10px;top:9px;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-family:var(--cin);font-weight:900;font-size:13px;color:#120a06;background:linear-gradient(180deg,var(--gold2),var(--gold));box-shadow:0 0 10px rgba(245,198,110,.6)}
+.card .pw{position:absolute;right:12px;top:4px;font-family:var(--cin);font-weight:900;font-size:30px;color:rgb(var(--c));text-shadow:0 0 14px rgb(var(--c) / .9)}
+.card .nm{margin-top:30px;font-weight:800;font-size:13.5px;white-space:nowrap}
+.card .en{font-family:var(--cin);font-size:9px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+.pips{display:flex;gap:4px;margin-top:7px}
+.pips i{width:8px;height:8px;transform:rotate(45deg);background:rgb(var(--c,245 198 110));box-shadow:0 0 6px rgb(var(--c,245 198 110))}
+.card .cdov{position:absolute;inset:0;border-radius:16px;background:conic-gradient(rgba(4,2,8,.72) var(--p,0deg),transparent 0);pointer-events:none}
+.card .cdt{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--cin);font-weight:900;font-size:26px;color:#fff;text-shadow:0 0 10px #000;pointer-events:none}
+.card.pro{--c:92 242 255}
+.card.pro.on{border-color:rgba(92,242,255,.9);box-shadow:0 0 30px rgba(92,242,255,.5),0 18px 50px rgba(0,0,0,.5)}
+.card.pro .key{width:auto;padding:0 6px;font-size:9px;letter-spacing:.1em}
+#deck.frozen .card:not(.pro){filter:saturate(.2) brightness(.8)}
+#deck.frozen:after{content:"FROZEN";position:absolute;inset:-6px;border-radius:20px;display:grid;place-items:center;font-family:var(--cin);font-weight:900;font-size:34px;letter-spacing:.5em;color:#e6f6ff;text-shadow:0 0 18px #6cc4ff;background:linear-gradient(135deg,rgba(150,210,255,.22),rgba(40,90,160,.25));border:1px solid rgba(180,230,255,.6);backdrop-filter:blur(2px);pointer-events:none}
+
+/* ---------- Seal (cast) ---------- */
+#seal{position:fixed;left:50%;top:118px;transform:translateX(-50%);padding:14px 22px 14px;min-width:380px;text-align:center;pointer-events:none}
+#seal .ttl{font-size:12px;letter-spacing:.3em;color:var(--dim)}
+#seal .ttl b{font-family:var(--cin);color:var(--gold2);letter-spacing:.12em;font-size:15px;margin-left:6px}
+.runes{display:flex;justify-content:center;gap:12px;margin:12px 0 10px}
+.rune{position:relative;width:56px;height:62px;transition:transform .12s,filter .12s}
+.rune .hx{position:absolute;inset:0;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:linear-gradient(160deg,rgba(255,236,190,.55),rgba(120,80,40,.5));display:grid;place-items:center}
+.rune .hx:before{content:"";position:absolute;inset:2px;clip-path:inherit;background:radial-gradient(circle at 50% 30%,#2a1a30,#0d0812)}
+.rune b{position:relative;font-family:var(--cin);font-weight:900;font-size:24px;color:var(--gold2)}
+.rune.cur{transform:scale(1.14);filter:drop-shadow(0 0 10px var(--gold)) drop-shadow(0 0 22px rgba(255,160,60,.6))}
+.rune.cur .hx{background:linear-gradient(160deg,#fff4cf,#f5a94a)}
+.rune.done{opacity:.35;filter:grayscale(.3)}
+.rune.done b{color:#9ff7c0}
+.tbar{height:5px;border-radius:3px;background:rgba(0,0,0,.5);overflow:hidden}
+.tbar i{display:block;height:100%;background:linear-gradient(90deg,#ff6a3d,var(--gold2));box-shadow:0 0 10px var(--gold)}
+.hint{margin-top:8px;font-size:11px;color:var(--dim);letter-spacing:.06em}
+.hint em{font-style:normal;color:#ff8fa3}
+
+/* ---------- Counter ---------- */
+#seal.low{top:318px}
+#counter{position:fixed;left:50%;top:118px;transform:translateX(-50%);padding:16px 30px 16px;text-align:center;pointer-events:none;border-color:rgba(255,58,94,.55);
+  box-shadow:0 0 0 1px rgba(255,58,94,.3),0 0 60px rgba(255,30,70,.45),0 18px 50px rgba(0,0,0,.55);animation:cin .18s ease-out}
+@keyframes cin{from{transform:translateX(-50%) scale(1.25);opacity:0}}
+#counter .h{font-family:var(--serif);font-weight:800;font-size:30px;letter-spacing:.5em;padding-left:.5em;color:#ffe1e6;text-shadow:0 0 10px var(--crimson),0 0 30px rgba(255,40,80,.8)}
+#counter .s{font-family:var(--cin);font-size:11px;letter-spacing:.35em;color:#ffb3c0;margin-top:2px}
+#counter .runes{gap:16px;margin:14px 0 12px}
+.arw{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;font-size:36px;font-weight:900;color:#fff;background:radial-gradient(circle at 50% 35%,#4a0d1c,#12040a);border:2px solid rgba(255,90,120,.7);box-shadow:0 0 18px rgba(255,58,94,.5),inset 0 0 18px rgba(255,58,94,.35);transition:transform .1s}
+.arw.cur{transform:scale(1.15);border-color:#fff;box-shadow:0 0 26px #ff3a5e,0 0 60px rgba(255,58,94,.6),inset 0 0 20px rgba(255,120,150,.6)}
+.arw.done{opacity:.3;border-color:#7dffb0}
+#counter .tbar i{background:linear-gradient(90deg,#ff1f4b,#ffb36b);box-shadow:0 0 10px var(--crimson)}
+#counter .q{font-size:11px;color:#ffb3c0;margin-top:6px;letter-spacing:.1em;min-height:14px}
+
+/* ---------- Menu ---------- */
+.overlay{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(120% 90% at 50% 40%,rgba(10,4,16,.35),rgba(4,2,8,.85));pointer-events:auto;overflow:auto;padding:16px}
+#menu .panel{width:min(1000px,100%);padding:26px 30px 22px;margin:auto}
+.logo{text-align:center}
+.logo h1{font-family:var(--rye);font-weight:400;font-size:clamp(40px,6vw,72px);letter-spacing:.06em;line-height:1;
+  background:linear-gradient(180deg,#fff6dc 10%,#f5c66e 45%,#c0612b 90%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 10px rgba(255,150,60,.55)) drop-shadow(0 4px 0 rgba(0,0,0,.6))}
+.logo .jp{font-weight:800;font-size:16px;letter-spacing:.6em;color:#ffe3c2;margin-top:6px;text-shadow:0 0 14px rgba(255,120,60,.6)}
+.logo .line{height:1px;margin:14px auto 0;width:60%;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.sect{margin-top:18px}
+.sect h3{font-family:var(--cin);font-weight:700;font-size:12px;letter-spacing:.35em;color:var(--gold2);display:flex;justify-content:space-between;align-items:baseline}
+.sect h3 span{font-family:var(--serif);letter-spacing:.1em;color:var(--dim);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.opt{position:relative;padding:11px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.28);cursor:pointer;transition:all .15s;overflow:hidden}
+.opt:before{content:"";position:absolute;inset:0;background:radial-gradient(100% 80% at 90% 0%,rgb(var(--c) / .22),transparent 60%)}
+.opt:hover{border-color:rgb(var(--c) / .6);transform:translateY(-2px)}
+.opt.sel{border-color:rgb(var(--c));box-shadow:0 0 0 1px rgb(var(--c) / .5),0 0 24px rgb(var(--c) / .4)}
+.opt.sel:after{content:"✓";position:absolute;right:10px;bottom:8px;font-weight:900;color:rgb(var(--c))}
+.opt .pw{position:absolute;right:10px;top:4px;font-family:var(--cin);font-weight:900;font-size:24px;color:rgb(var(--c));text-shadow:0 0 12px rgb(var(--c) / .8)}
+.opt .nm{position:relative;font-weight:800;font-size:13.5px}
+.opt .en{position:relative;font-family:var(--cin);font-size:9px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+.opt .meta{position:relative;font-size:10.5px;color:var(--dim);margin-top:6px}
+.seg{display:flex;gap:8px;margin-top:10px}
+.seg button{flex:1}
+.btn{font-family:var(--cin);font-weight:700;letter-spacing:.2em;font-size:12px;color:var(--ink);padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.3);cursor:pointer;transition:all .15s}
+.btn:hover{border-color:var(--gold)}
+.btn.on{color:#1a0e04;background:linear-gradient(180deg,var(--gold2),var(--gold));border-color:var(--gold);box-shadow:0 0 18px rgba(245,198,110,.5)}
+.cols{display:grid;grid-template-columns:1fr 1.25fr;gap:22px}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:7px 12px;margin-top:10px;font-size:12.5px;align-items:center}
+kbd{font-family:var(--cin);font-weight:900;font-size:11px;padding:3px 7px;border-radius:6px;background:linear-gradient(180deg,#3a2a40,#1a1020);border:1px solid rgba(255,220,170,.3);box-shadow:0 2px 0 #000;color:var(--gold2);white-space:nowrap}
+.rules{margin-top:10px;font-size:12px;line-height:1.75;color:#e6d6bf}
+.rules b{color:var(--gold2)}
+.go{display:flex;align-items:center;justify-content:space-between;margin-top:20px;gap:14px}
+#start{font-family:var(--rye);font-weight:400;font-size:24px;letter-spacing:.14em;padding:12px 44px;border-radius:12px;border:1px solid #ffcf86;color:#2a1204;cursor:pointer;
+  background:linear-gradient(180deg,#fff0c6,#f5b552 55%,#c46a24);box-shadow:0 0 30px rgba(255,160,60,.55),inset 0 1px 0 #fff;transition:transform .12s,filter .12s}
+#start:hover{transform:translateY(-2px);filter:brightness(1.08)}
+#start:disabled{filter:grayscale(1) brightness(.6);cursor:not-allowed}
+#selftest{font-family:var(--cin);font-size:11px;letter-spacing:.14em;padding:6px 12px;border-radius:999px;border:1px solid rgba(125,255,176,.5);color:#bfffd6;background:rgba(10,60,30,.35);cursor:help}
+#selftest.bad{border-color:rgba(255,58,94,.7);color:#ffc0cc;background:rgba(80,10,20,.4)}
+.goL{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+a.btn.more{text-decoration:none;display:inline-flex;align-items:center;font-family:var(--serif);font-weight:800;letter-spacing:.12em;color:var(--gold2);border-color:rgba(245,198,110,.45)}
+a.btn.more:hover{background:rgba(245,198,110,.12)}
+/* RED FREE GAMES 共通：他のゲーム・要望フォーム・フッター */
+#result .btns.sub2{margin-top:12px}
+.btn.share{font-family:var(--serif);font-weight:800;letter-spacing:.08em}
+.fb-link{display:block;margin-top:12px;font-size:12px;font-weight:800;color:var(--dim);text-decoration:underline;text-align:center}
+.site-foot{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 12px;margin-top:12px;font-size:11.5px;font-weight:700;color:var(--dim)}
+.site-foot .coffee{background:#ffdd57;color:#2a1a14;border-radius:99px;padding:6px 12px;text-decoration:none;font-weight:800}
+.site-foot .pv{color:var(--dim);text-decoration:underline}
+
+/* ---------- Stages ---------- */
+.stages{display:grid;grid-template-columns:repeat(10,1fr);gap:8px;margin-top:10px}
+.stg{position:relative;padding:8px 0 7px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.3);color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .15s}
+.stg b{font-family:var(--cin);font-weight:900;font-size:20px;line-height:1}
+.stg small{font-family:var(--cin);font-size:8px;letter-spacing:.14em;color:var(--dim)}
+.stg:hover:not(:disabled){border-color:var(--gold);transform:translateY(-2px)}
+.stg.done b{color:#9ff7c0}.stg.done small{color:#7ddca2}
+.stg.boss b{color:#ff8fa3}
+.stg.on{border-color:var(--gold);background:linear-gradient(180deg,rgba(245,198,110,.28),rgba(245,198,110,.06));box-shadow:0 0 0 1px rgba(245,198,110,.5),0 0 18px rgba(245,198,110,.35)}
+.stg.on b{color:var(--gold2)}
+.stg.lock{opacity:.35;cursor:not-allowed}
+.stageCard{margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.1);display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr);gap:8px 18px;align-items:center}
+.stageCard .who{display:flex;flex-direction:column;gap:1px;font-weight:800;font-size:15px}
+.stageCard .who b{font-family:var(--cin);font-size:10px;letter-spacing:.3em;color:var(--gold)}
+.stageCard .who small{font-family:var(--cin);font-size:9px;letter-spacing:.2em;color:var(--dim)}
+.meter{display:grid;grid-template-columns:1fr;gap:4px;font-size:11px}
+.meter span{font-weight:800;color:#e6d6bf;letter-spacing:.06em}
+.meter i{display:block;height:6px;border-radius:3px;background:rgba(0,0,0,.5);overflow:hidden}
+.meter i b{display:block;height:100%;background:linear-gradient(90deg,#7ddca2,var(--gold2) 50%,#ff3a5e)}
+.meter em{font-style:normal;font-family:var(--cin);font-size:10px;color:var(--dim);letter-spacing:.06em}
+.stageCard .note{grid-column:1/-1;font-size:11px;color:var(--dim)}
+.resStage{font-family:var(--cin);font-size:11px;letter-spacing:.3em;color:var(--dim);margin-bottom:6px}
+
+/* ---------- Special spells ---------- */
+.ico{width:1.15em;height:1.15em;vertical-align:-.2em;margin-right:.3em;flex:none}
+.sub{margin-top:12px;font-weight:800;font-size:12px;letter-spacing:.2em;color:#e9d6b8;display:flex;align-items:baseline;gap:10px}
+.sub small{font-family:var(--cin);font-size:9.5px;letter-spacing:.2em;color:var(--dim);font-weight:700}
+.sub.sp{color:#e8dcff;margin-top:16px}
+.grid.special{grid-template-columns:repeat(5,1fr)}
+.opt.special{background:linear-gradient(160deg,rgb(var(--c) / .12),rgba(0,0,0,.34) 55%);border-color:rgb(var(--c) / .32)}
+.stag{display:inline-flex;align-items:center;font-weight:800;font-size:10.5px;letter-spacing:.08em;color:rgb(var(--c));padding:2px 7px 2px 5px;border-radius:999px;background:rgb(var(--c) / .12);border:1px solid rgb(var(--c) / .45);position:relative;margin-bottom:5px;white-space:nowrap}
+.opt .desc{position:relative;font-size:10.5px;line-height:1.55;color:#e6d6bf;margin-top:6px;min-height:4.7em}
+.pw.inf{font-family:var(--serif)!important;font-size:18px!important;letter-spacing:.04em;top:9px!important}
+@property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+@keyframes aura{to{--a:360deg}}
+.card.special{border-color:rgb(var(--c) / .5)}
+.card .aura{position:absolute;inset:0;border-radius:inherit;padding:1.5px;background:conic-gradient(from var(--a),transparent 0 50%,rgb(var(--c)) 72%,#fff 76%,transparent 92%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  animation:aura 2.4s linear infinite;pointer-events:none}
+.card .stag{position:absolute;right:9px;bottom:8px;margin:0;font-size:10px;padding:1px 6px 1px 4px}
+.card .stag em{font-style:normal;margin-left:4px;font-family:var(--cin);font-weight:900}
+.card.spent{filter:grayscale(.85) brightness(.6)}
+.card.spent .aura{display:none}
+.chip .ico{width:12px;height:12px;margin-right:4px}
+.chip.st{color:#fff3b0;border-color:rgba(255,226,60,.8);background:rgba(120,90,0,.4);box-shadow:0 0 12px rgba(255,226,60,.45)}
+.chip.mg{color:#c8ffe6;border-color:rgba(70,255,170,.7);background:rgba(10,80,50,.4);animation:glitch .3s steps(2) infinite}
+#deck.stunned .card:not(.pro){filter:saturate(.3) brightness(.7)}
+#deck.stunned:after{content:"STUNNED";position:absolute;inset:-6px;border-radius:20px;display:grid;place-items:center;font-family:var(--cin);font-weight:900;font-size:34px;letter-spacing:.5em;color:#fff6c0;text-shadow:0 0 18px #ffd23c;
+  background:repeating-linear-gradient(135deg,rgba(255,220,60,.20) 0 14px,rgba(40,30,0,.30) 14px 28px);border:1px solid rgba(255,226,60,.7);pointer-events:none;animation:stunJit .1s steps(2) infinite}
+@keyframes stunJit{50%{transform:translate(1.5px,-1px)}}
+#seal.special{border-color:rgb(var(--c) / .6);box-shadow:0 0 0 1px rgb(var(--c) / .35),0 0 40px rgb(var(--c) / .35),0 18px 50px rgba(0,0,0,.5)}
+#seal.special .ttl b{color:rgb(var(--c))}
+#counter .s em{font-style:normal;color:#fff;letter-spacing:.1em;font-family:var(--serif);font-weight:800}
+/* Mirage Curse: the guide glitches and lies */
+@keyframes glitch{0%,100%{transform:none;text-shadow:-2px 0 #ff3ad0,2px 0 #3affc8}33%{transform:translate(1px,-1px) skewX(-9deg);opacity:.75}66%{transform:translate(-1px,1px) skewX(7deg);text-shadow:2px 0 #ff3ad0,-2px 0 #3affc8}}
+body.mirage #seal .rune:not(.done) b,body.mirage #counter .arw:not(.done),body.mirage .strip i:not(.done){animation:glitch .26s steps(2) infinite}
+body.mirage #seal,body.mirage #counter,body.touch.mirage .pnl{border-color:rgba(70,255,170,.7)!important}
+body.mirage #seal .ttl:after,body.touch.mirage .pnl header:after{content:"◈ 幻惑 — 長く映る印が本物";display:block;margin-top:3px;font-size:10.5px;letter-spacing:.08em;color:#7dffc8;font-family:var(--serif);font-weight:800}
+body.touch .pnl{position:relative}
+body.touch.mirage .pnl header:after{position:absolute;left:50%;top:-9px;transform:translateX(-50%);margin:0;white-space:nowrap;font-size:9px;letter-spacing:.04em;padding:1px 7px;border-radius:6px;background:#06291c;border:1px solid rgba(70,255,170,.6)}
+
+/* ---------- Touch dock (phones / tablets only — every rule is scoped to body.touch) ---------- */
+canvas#c,#hud,#deck,#dock{touch-action:none}
+.touchOnly,#dock{display:none}
+body.touch .touchOnly{display:block}
+/* the battle area stays clean: seal / counter overlays move into the dock panels */
+body.touch #seal,body.touch #counter{display:none!important}
+body.touch #dock:not(.hide){display:flex;flex-direction:column;gap:8px;position:fixed;left:0;right:0;bottom:0;
+  padding:10px max(10px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));
+  background:linear-gradient(180deg,rgba(16,9,22,.94),rgba(6,3,10,.98));border-top:1px solid rgba(245,198,110,.38);box-shadow:0 -14px 34px rgba(0,0,0,.65)}
+body.touch #dock:before{content:"";position:absolute;left:0;right:0;top:-1px;height:1px;background:linear-gradient(90deg,transparent,rgba(245,198,110,.9),transparent)}
+.dockRow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pnl{border-radius:14px;padding:7px 8px 9px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;transition:box-shadow .2s,border-color .2s}
+.pnl header{width:100%;display:flex;justify-content:space-between;align-items:baseline;font-size:11px;font-weight:800;letter-spacing:.18em}
+.pnl header small{font-family:var(--cin);font-size:10px;letter-spacing:.12em;opacity:.75}
+#castPanel{background:linear-gradient(180deg,rgba(245,198,110,.10),rgba(245,198,110,.03));border:1px solid rgba(245,198,110,.35)}
+#castPanel header{color:var(--gold2)}
+#ctrPanel{background:linear-gradient(180deg,rgba(255,58,94,.12),rgba(255,58,94,.03));border:1px solid rgba(255,58,94,.38)}
+#ctrPanel header{color:#ffb3c0}
+#castPanel.live{border-color:var(--gold);box-shadow:0 0 0 1px rgba(245,198,110,.4),0 0 20px rgba(245,198,110,.35)}
+#ctrPanel.live{border-color:#ff3a5e;box-shadow:0 0 0 1px rgba(255,58,94,.6),0 0 26px rgba(255,58,94,.6);animation:ctrPulse .45s ease-in-out infinite alternate}
+@keyframes ctrPulse{to{box-shadow:0 0 0 1px rgba(255,120,150,.9),0 0 34px rgba(255,58,94,.85)}}
+.strip{width:100%;height:30px;display:flex;align-items:center;justify-content:center;gap:4px}
+.strip .ph{font-size:10px;color:var(--dim);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strip i{font-style:normal;display:grid;place-items:center;width:24px;height:26px;font-family:var(--cin);font-weight:900;font-size:14px;transition:transform .1s}
+#castStrip i{clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:#3a2a1c;color:var(--gold2)}
+#castStrip i.cur{background:linear-gradient(160deg,#fff4cf,#f5a94a);color:#1a0e04;transform:scale(1.18)}
+#ctrStrip i{border-radius:50%;width:26px;background:#3a0c18;color:#ffd0d8;border:1px solid rgba(255,90,120,.6)}
+#ctrStrip i.cur{background:#ff3a5e;color:#fff;border-color:#fff;transform:scale(1.18)}
+.strip i.done{opacity:.3}
+.stripT{width:100%;height:3px;border-radius:2px;background:rgba(0,0,0,.5);overflow:hidden}
+.stripT b{display:block;height:100%;width:0}
+#castT{background:linear-gradient(90deg,#ff6a3d,var(--gold2))}
+#ctrT2{background:linear-gradient(90deg,#ff1f4b,#ffb36b)}
+#runePad{display:grid;grid-template-columns:repeat(2,48px);gap:6px 14px}
+#arrowPad{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:6px}
+.pbtn{position:relative;border:0;padding:0;background:none;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .08s,opacity .15s}
+.pbtn:focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
+.pbtn.rn{width:48px;height:52px}
+.pbtn.rn .hx{position:absolute;inset:0;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:linear-gradient(160deg,#ffe3a3,#a8652a);display:grid;place-items:center}
+.pbtn.rn .hx:before{content:"";position:absolute;inset:2px;clip-path:inherit;background:radial-gradient(circle at 50% 30%,#3a2614,#120a05)}
+.pbtn.rn b{position:relative;font-family:var(--cin);font-weight:900;font-size:22px;color:var(--gold2)}
+.pbtn.ar{width:46px;height:46px;border-radius:50%;font-size:22px;font-weight:900;color:#fff;background:radial-gradient(circle at 50% 35%,#4a0d1c,#12040a);border:2px solid rgba(255,90,120,.6);box-shadow:inset 0 0 12px rgba(255,58,94,.3)}
+#arrowPad .up{grid-column:2;grid-row:1}#arrowPad .lf{grid-column:1;grid-row:2}#arrowPad .dn{grid-column:2;grid-row:2}#arrowPad .rt{grid-column:3;grid-row:2}
+#runePad.idle .pbtn,#arrowPad.idle .pbtn{opacity:.38}
+.pbtn.hit{transform:scale(.86)}
+/* HUD + spell cards on touch */
+body.touch #hud{padding:calc(8px + env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px));gap:8px}
+body.touch .plate{width:auto;flex:1;min-width:0;padding:8px 10px}
+body.touch .pname{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.touch .pname small{display:none}
+body.touch .hpnum{font-size:16px;min-width:40px}
+body.touch .hpbar{height:12px}
+body.touch #mid{display:none}
+body.touch #deck{position:static;transform:none;display:flex;gap:6px;width:100%}
+body.touch #deck.hide{display:none}
+body.touch .card{flex:1;min-width:0;width:auto;height:54px;padding:5px 7px;border-radius:12px}
+body.touch .card .key,body.touch .card .en,body.touch .card .pips{display:none}
+body.touch .card .pw{font-size:18px;right:7px;top:1px}
+body.touch .card .nm{margin-top:25px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.touch .card .cdt{font-size:16px}
+body.touch .card.casting{transform:translateY(-3px)}
+body.touch #deck.frozen:after,body.touch #deck.stunned:after{font-size:16px;letter-spacing:.3em}
+body.touch .card .stag{left:5px;top:4px;right:auto;bottom:auto;padding:1px 4px 1px 3px;font-size:9px}
+body.touch .card .stag span{display:none}
+body.touch .card .stag .ico{margin-right:0}
+body.touch .card .stag em{margin-left:2px}
+body.touch .pw.inf{font-size:12px!important;top:5px!important}
+/* landscape phones: panels become side columns, cards sit between them */
+@media (orientation:landscape){
+  body.touch #dock:not(.hide){display:grid;grid-template-columns:182px 1fr 182px;align-items:end;gap:10px;background:none;border-top:0;box-shadow:none}
+  body.touch #dock:before{display:none}
+  body.touch .dockRow{display:contents}
+  body.touch #castPanel{grid-column:1;grid-row:1;background:rgba(14,8,20,.9)}
+  body.touch #ctrPanel{grid-column:3;grid-row:1;background:rgba(20,6,12,.9)}
+  body.touch #deck{grid-column:2;grid-row:1;align-self:end;min-width:0}
+}
+
+/* ---------- Result ---------- */
+#result .panel{padding:30px 46px;text-align:center;min-width:min(520px,92vw)}
+#result h2{font-family:var(--rye);font-weight:400;font-size:clamp(48px,8vw,92px);letter-spacing:.08em;line-height:1}
+#result h2.win{background:linear-gradient(180deg,#fffbe6,#f5c66e 55%,#c0612b);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 16px rgba(255,170,70,.7))}
+#result h2.lose{background:linear-gradient(180deg,#ffd9df,#ff3a5e 55%,#5a0618);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 16px rgba(255,40,80,.7))}
+#result .jp{font-weight:800;letter-spacing:.5em;margin-top:8px;color:#ffe9d2}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0}
+.stats div{padding:10px 6px;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1)}
+.stats b{display:block;font-family:var(--cin);font-weight:900;font-size:24px;color:var(--gold2)}
+.stats span{font-size:10.5px;color:var(--dim)}
+#result .btns{display:flex;gap:12px;justify-content:center}
+
+@media (max-width:860px){
+  .grid,.grid.special{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .go{flex-wrap:wrap;justify-content:center}
+  .stages{grid-template-columns:repeat(5,1fr)}
+  .stageCard{grid-template-columns:1fr}
+  #menu .panel{padding:22px 18px 20px}
+  .cols{grid-template-columns:1fr}
+  .card{width:118px;padding:8px}
+  .card .nm{font-size:11.5px}
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud" class="hide">
+  <div class="plate p glass">
+    <div class="row1"><span class="tag">YOU</span><span class="pname">黎明の魔銃士<small>DAWN HEXSLINGER</small></span></div>
+    <div class="hpwrap"><div class="hpbar"><div class="ghost" id="gP"></div><div class="fill" id="fP"></div></div><div class="hpnum" id="nP">150</div></div>
+    <div class="status" id="sP"></div>
+  </div>
+  <div id="mid"><div class="duel">DUEL</div><div class="sub">DISTANCE 50</div><div class="inc" id="inc"></div></div>
+  <div class="plate e glass">
+    <div class="row1"><span class="tag">RIVAL</span><span class="pname" id="eName">黄昏の魔弾卿 ヴァルド<small>DUSK WARLOCK</small></span></div>
+    <div class="hpwrap"><div class="hpbar"><div class="ghost" id="gE"></div><div class="fill" id="fE"></div></div><div class="hpnum" id="nE">150</div></div>
+    <div class="status" id="sE"></div>
+  </div>
+</div>
+
+<div id="seal" class="glass hide">
+  <div class="ttl">発動の印<b id="sealName"></b></div>
+  <div class="runes" id="sealRunes"></div>
+  <div class="tbar"><i id="sealT"></i></div>
+  <div class="hint" id="sealHint">Q E Z C で表示どおりに印を刻め ― 誤入力・時間切れは不発 ― Esc で中断</div>
+</div>
+
+<div id="counter" class="glass hide">
+  <div class="h">反魔法</div>
+  <div class="s" id="ctrSub">COUNTER-SPELL</div>
+  <div class="runes" id="ctrRunes"></div>
+  <div class="tbar"><i id="ctrT"></i></div>
+  <div class="q" id="ctrQ"></div>
+</div>
+
+<div id="deck" class="hide"></div>
+
+<!-- Phone/tablet control dock (shown only with body.touch). Cast = 1–4 (gold, left), counter = arrows (crimson, right). -->
+<div id="dock" class="hide">
+  <div class="dockRow">
+    <section class="pnl" id="castPanel" aria-label="発動の印">
+      <header><span>発動の印</span><small>1 – 4</small></header>
+      <div class="strip" id="castStrip"><span class="ph">カードをタップして詠唱</span></div>
+      <div class="stripT"><b id="castT"></b></div>
+      <div id="runePad" class="idle">
+        <button class="pbtn rn" data-code="KeyQ" aria-label="1"><span class="hx"><b>1</b></span></button>
+        <button class="pbtn rn" data-code="KeyE" aria-label="2"><span class="hx"><b>2</b></span></button>
+        <button class="pbtn rn" data-code="KeyZ" aria-label="3"><span class="hx"><b>3</b></span></button>
+        <button class="pbtn rn" data-code="KeyC" aria-label="4"><span class="hx"><b>4</b></span></button>
+      </div>
+    </section>
+    <section class="pnl" id="ctrPanel" aria-label="反魔法">
+      <header><span>反魔法</span><small>↑ ↓ ← →</small></header>
+      <div class="strip" id="ctrStrip"><span class="ph">敵弾が距離10で発動</span></div>
+      <div class="stripT"><b id="ctrT2"></b></div>
+      <div id="arrowPad" class="idle">
+        <button class="pbtn ar up" data-code="ArrowUp" aria-label="上">↑</button>
+        <button class="pbtn ar lf" data-code="ArrowLeft" aria-label="左">←</button>
+        <button class="pbtn ar dn" data-code="ArrowDown" aria-label="下">↓</button>
+        <button class="pbtn ar rt" data-code="ArrowRight" aria-label="右">→</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="menu" class="overlay">
+  <div class="panel glass">
+    <div class="logo">
+      <h1>HEXSLINGER</h1>
+      <div class="jp">魔 弾 決 闘 ― 黄 昏 の 早 撃 ち</div>
+      <div class="line"></div>
+    </div>
+    <div class="sect">
+      <h3>LOADOUT <span id="selCount">4 / 4 を選択</span></h3>
+      <div class="sub">基本魔法 <small>STANDARD · 威力 10〜50</small></div>
+      <div class="grid" id="spellGrid"></div>
+      <div class="sub sp">特殊魔法 <small>SPECIAL · 4枠に自由に組み込める</small></div>
+      <div class="grid special" id="specialGrid"></div>
+    </div>
+    <div class="sect">
+      <h3>STAGE <span id="stageCount"></span></h3>
+      <div class="stages" id="stageGrid"></div>
+      <div class="stageCard" id="stageCard"></div>
+    </div>
+    <div class="cols">
+      <div class="sect">
+        <h3>CONTROLS</h3>
+        <div class="keys">
+          <kbd>1 〜 4</kbd><span>魔法を選択（カードのクリックでも可）</span>
+          <kbd>Q E Z C</kbd><span>発動の印（3〜5印・制限時間内に正確に）</span>
+          <kbd>← ↑ → ↓</kbd><span>反魔法の印（敵弾が距離10に来た時のみ・2〜3印）</span>
+          <kbd>SPACE</kbd><span>プロテゴ（5秒間 / 再使用16秒）</span>
+          <kbd>ESC</kbd><span>詠唱を中断</span>
+        </div>
+        <div class="rules touchOnly">スマホ：カードをタップで魔法を選び、金色パネルの 1〜4 で発動の印。敵弾が距離10に来たら赤いパネルの矢印で反魔法。プロテゴは右端のカード。</div>
+      </div>
+      <div class="sect">
+        <h3>RULES OF THE DUEL</h3>
+        <div class="rules">
+          ・両者の距離は <b>50</b>。魔弾はリアルタイムに相手へ迫る。<br>
+          ・<b>相殺（距離11〜39）</b>：魔弾同士が衝突すると <b>威力差</b> だけを残し、強い側が直進。同威力なら両者消滅。<br>
+          ・<b>強制反魔法（距離10以内）</b>：敵弾は距離10で停止し、時間が鈍化。矢印の印に成功で無傷、失敗で直撃。<br>
+          ・<b>プロテゴ</b>：発動中は威力10以下の弾（相殺後の余剰を含む）を自動で無効化。<br>
+          ・発動の印を誤るか時間切れで <b>不発＋1.4秒フリーズ</b>。<br>
+          ・<b>特殊魔法</b>：スタン・攪乱は <b>命中時</b>、吸収は <b>命中時と相殺で敵弾を消した時</b> に発動。反魔法やプロテゴで防げば効果なし。
+        </div>
+      </div>
+    </div>
+    <div class="go">
+      <div class="goL">
+        <span id="selftest" title="">SELF-TEST …</span>
+        <a class="btn more" href="https://red-freegames.github.io/">🎮 他のゲームを見る</a>
+      </div>
+      <button id="start">DRAW!</button>
+    </div>
+    <a class="fb-link" target="_blank" rel="noopener">💬 要望・バグ報告はこちら</a>
+    <footer class="site-foot">
+      <a class="coffee" href="https://buymeacoffee.com/red_freegames" target="_blank" rel="noopener">開発者にコーヒーを奢る☕</a>
+      <span>配信・動画利用大歓迎！商用利用OK</span>
+      <a class="pv" href="https://red-freegames.github.io/privacy.html" target="_blank" rel="noopener">プライバシー</a>
+    </footer>
+  </div>
+</div>
+
+<div id="result" class="overlay hide">
+  <div class="panel glass">
+    <div class="resStage" id="resStage"></div>
+    <h2 id="resT">VICTORY</h2>
+    <div class="jp" id="resJ">決闘に勝利した</div>
+    <div class="stats" id="resStats"></div>
+    <div class="btns"><button class="btn on hide" id="next">NEXT STAGE ▶</button><button class="btn" id="again">REMATCH</button><button class="btn" id="toMenu">LOADOUT</button></div>
+    <div class="btns sub2"><button class="btn share" id="share">𝕏 で結果をシェア</button><a class="btn more" href="https://red-freegames.github.io/">🎮 他のゲームを見る</a></div>
+    <a class="fb-link" target="_blank" rel="noopener">💬 要望・バグ報告はこちら</a>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   CORE RULES (pure simulation — also used by the self-test suite)
+   ===================================================================== */
+const $=s=>document.querySelector(s);
+const rand=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+const DIST=50, ZONE=10, MAXHP=150, FREEZE=1.4, PROTEGO_DUR=5, PROTEGO_CD=16, PROTEGO_MAX=10, STRIKE_SPEED=75, COUNTER_SLOW=.35;
+// seal keys (left hand): Q E / Z C
+const CAST_KEYS=['KeyQ','KeyE','KeyZ','KeyC'];
+const SELECT_KEYS=['Digit1','Digit2','Digit3','Digit4']; // spell select
+const CTR_KEYS=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
+const LABEL={Digit1:'1',Digit2:'2',Digit3:'3',Digit4:'4',KeyQ:'Q',KeyE:'E',KeyZ:'Z',KeyC:'C',ArrowUp:'↑',ArrowDown:'↓',ArrowLeft:'←',ArrowRight:'→'};
+
+const SPELLS=[
+  {id:'ember',  jp:'エンバー・ダート',   en:'Ember Dart',      power:10,speed:20,  col:[255,138,48], core:[255,240,200],style:'ember'},
+  {id:'frost',  jp:'フロスト・ランス',   en:'Frost Lance',     power:20,speed:17,  col:[110,185,255],core:[235,248,255],style:'frost'},
+  {id:'thunder',jp:'サンダー・ピール',   en:'Thunder Peal',    power:30,speed:14.5,col:[160,130,255],core:[240,235,255],style:'thunder'},
+  {id:'comet',  jp:'デッドマンズ・コメット',en:"Dead Man's Comet",power:50,speed:10.5,col:[255,196,80],core:[255,255,235],style:'comet'},
+  // ---- 特殊魔法 (kind) — seal: 印数の固定, cd: 再使用, uses: 1試合の回数制限 ----
+  {id:'breaker',jp:'ナル・ブレイカー',   en:'Null Breaker',    power:0, speed:19,  col:[235,240,255],core:[255,255,255],style:'breaker',kind:'breaker',seal:4,cd:8.5,
+   tag:'潰し',desc:'威力 極大（相殺専用）。どんな魔弾も衝突で消し去り、貫通弾も捕える。本体ダメージ 0'},
+  {id:'stun',   jp:'スタン・ショット',   en:'Stun Shot',       power:15,speed:18,  col:[255,226,60], core:[255,255,215],style:'stun',kind:'stun',seal:4,cd:4.5,uses:5,
+   tag:'スタン',desc:"命中で 2秒スタン（詠唱・印・プロテゴ不可）。1試合 5回まで"},
+  {id:'phantom',jp:'ファントム・ピアス', en:'Phantom Pierce',  power:20,speed:15,  col:[200,160,255],core:[248,240,255],style:'phantom',kind:'phantom',seal:5,cd:6.5,
+   tag:'貫通',desc:'敵の魔弾と相殺せず、すり抜けて直進する。ナル・ブレイカーにだけは捕まる'},
+  {id:'drain',  jp:'ブラッド・ドレイン', en:'Blood Drain',     power:20,speed:15,  col:[230,40,130], core:[255,205,228],style:'drain',kind:'drain',seal:4,cd:5.5,
+   tag:'吸収',desc:'命中でダメージの半分、相殺で消した敵威力の半分をHP回復。満タン時はプロテゴ再使用を短縮'},
+  {id:'mirage', jp:'ミラージュ・カース', en:'Mirage Curse',    power:20,speed:17,  col:[70,255,170], core:[225,255,240],style:'mirage',kind:'mirage',seal:4,cd:5,
+   tag:'攪乱',desc:'命中で 4秒間、相手の印のガイドを幻惑・シャッフルし入力ミスを誘う'},
+];
+const STUN_DUR=2, MIRAGE_DUR=4, DRAIN_RATE=.5, DRAIN_CD_CUT=3;
+const KIND_ICON={ // 24x24 line icons for special spells
+  breaker:'<path d="M12 2.5 20 6v6c0 5-3.6 8.3-8 9.5C7.6 20.3 4 17 4 12V6z"/><path d="m8.5 8.5 7 7m0-7-7 7"/>',
+  stun:'<path d="M13.5 2 6 13h5l-1.5 9L18 10.5h-5z"/>',
+  phantom:'<circle cx="12" cy="12" r="5.5" stroke-dasharray="2.4 2.2"/><path d="M1.5 12h17m-3.5-4 4.5 4-4.5 4"/>',
+  drain:'<path d="M12 2.5C8.5 8 6 11.2 6 14.5a6 6 0 0 0 12 0C18 11.2 15.5 8 12 2.5z"/><path d="M12 11v6m-3-3h6"/>',
+  mirage:'<path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12z"/><path d="M12 9.2a2.8 2.8 0 1 0 2.8 2.8"/><path d="M15.5 4.5l2-2m-11 0 2 2"/>',
+};
+const icon=k=>`<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${KIND_ICON[k]}</svg>`;
+const powLabel=sp=>sp.kind==='breaker'?'極大':String(sp.power);
+// 発動の印：4種キーから3〜5印（難）。反魔法の印：敵弾迎撃専用・矢印2〜3印（易）
+const castLen=p=>p<=20?3:p<=35?4:5;
+const counterLen=p=>p>=40?3:2;
+const castLimit=p=>0.9+0.5*castLen(p);
+const counterLimit=p=>1.6+0.45*(counterLen(p)-2);
+const cooldown=p=>1.6+p*0.075;
+// per-spell versions (special spells override seal length / cooldown)
+const sealLen=sp=>sp.seal||castLen(sp.power);
+const sealLimit=sp=>0.9+0.5*sealLen(sp);
+const spCd=sp=>sp.cd||cooldown(sp.power);
+
+function genCastSeal(sp){
+  const n=sealLen(sp), s=[]; let prev=null;
+  for(let i=0;i<n;i++){let k;do k=pick(CAST_KEYS);while(k===prev);prev=k;s.push({k});}
+  return s;
+}
+function genCounterSeal(p){
+  const n=counterLen(p), s=[]; let prev=null;
+  for(let i=0;i<n;i++){let k;do k=pick(CTR_KEYS);while(k===prev);prev=k;s.push({k});}
+  return s;
+}
+
+/* 10 stages. Two difficulty variables rise together, stage by stage:
+   ① accuracy — the rival's casting-seal success (1-fail) and counter-seal success
+   ② speed    — seconds per seal key, plus think/reaction time between actions */
+const RIVALS=[
+  ['新米保安官 ジェド','ROOKIE DEPUTY'],['酒場の手品師 ルー','SALOON CONJURER'],['流れ者 ハンク','DRIFTER'],
+  ['鉄道強盗 モーガン','TRAIN ROBBER'],['墓守の呪術師 イーライ','GRAVE HEXER'],['賞金稼ぎ サディ','BOUNTY HUNTER'],
+  ['砂嵐の魔女 ベラ','DUST-STORM WITCH'],['双銃の司祭 カルロス','TWIN-GUN PRIEST'],['処刑人 グレイヴス','THE HANGMAN'],
+  ['黄昏の魔弾卿 ヴァルド','DUSK WARLOCK'],
+];
+const lerp=(a,b,k)=>a+(b-a)*k, r2=v=>Math.round(v*100)/100;
+const STAGES=RIVALS.map(([name,en],i)=>{const k=i/9,acc=r2(lerp(.70,.96,k));
+  return {no:i+1,name,en,
+    acc, fail:r2(1-acc), counter:r2(lerp(.40,.90,k)),               // ① 成功率
+    perKey:r2(lerp(.70,.26,k)), think:[r2(lerp(1.3,.12,k)),r2(lerp(2.3,.45,k))], react:[r2(lerp(.9,.35,k)),r2(lerp(1.5,.85,k))], // ② スピード
+    smart:r2(lerp(.2,.9,k)), protego:r2(lerp(.2,.85,k)), specials:i<3?0:i<7?1:2};
+});
+const NOFX=new Proxy({},{get:()=>()=>{}});
+
+function mkSide(id,load){
+  return {id,hp:MAXHP,load,cd:[0,0,0,0],uses:load.map(sp=>sp&&sp.uses!=null?sp.uses:Infinity),cast:null,frozen:0,stun:0,mirage:0,protego:0,protegoCd:0,counter:null,queue:[],
+          stats:{dmg:0,clash:0,counter:0,fizzle:0,heal:0,stun:0}};
+}
+
+class Duel{
+  constructor(o){
+    this.fx=o.fx||NOFX; this.ai=o.ai!==false; this.diff=o.diff||STAGES[4];
+    this.S={P:mkSide('P',o.loadP),E:mkSide('E',o.loadE)};
+    this.bolts=[]; this.state='fight'; this.t=0; this.uid=0; this.aiThink=rand(1.2,2);
+  }
+  foe(s){return s.id==='P'?this.S.E:this.S.P}
+  canAct(s){return this.state==='fight'&&s.stun<=0}  // stun: no selecting, sealing, countering or Protego
+  select(id,i){
+    const s=this.S[id], sp=s.load[i];
+    if(!this.canAct(s)||!sp||s.cast||s.frozen>0||s.cd[i]>0||s.uses[i]<=0) return false;
+    const lim=sealLimit(sp);
+    s.cast={i,sp,seal:genCastSeal(sp),idx:0,t:lim,limit:lim};
+    this.fx.castStart(s); return true;
+  }
+  cancel(id){const s=this.S[id]; if(s.cast&&!s.cast.ai){s.cast=null; this.fx.cancel(s);}}
+  castKey(id,code){
+    const s=this.S[id], c=s.cast; if(!c||c.ai||!this.canAct(s)) return;
+    if(code===c.seal[c.idx].k){c.idx++; this.fx.rune(s,false); if(c.idx>=c.seal.length) this.launch(s);}
+    else this.fizzle(s,'印の乱れ');
+  }
+  launch(s){
+    const c=s.cast; s.cast=null; s.cd[c.i]=spCd(c.sp); s.uses[c.i]--;
+    const b={id:++this.uid,owner:s.id,sp:c.sp,kind:c.sp.kind||null,power:c.sp.power,orig:c.sp.power,pos:s.id==='P'?0:DIST,speed:c.sp.speed,state:'fly',age:0,passed:null};
+    this.bolts.push(b); this.fx.launch(s,b); return b;
+  }
+  fizzle(s,why){
+    const c=s.cast; s.cast=null; s.frozen=FREEZE; s.stats.fizzle++;
+    if(c) s.cd[c.i]=Math.max(s.cd[c.i],1);
+    this.fx.fizzle(s,why);
+  }
+  protego(id){
+    const s=this.S[id];
+    if(!this.canAct(s)||s.protego>0||s.protegoCd>0) return false;
+    s.protego=PROTEGO_DUR; s.protegoCd=PROTEGO_CD; this.fx.protegoUp(s);
+    // 既に反魔法圏で停止中の弱い弾も即座に無効化
+    if(s.counter&&s.counter.bolt.power<=PROTEGO_MAX){const b=s.counter.bolt; s.counter=null; this.protegoBlock(s,b);}
+    s.queue=s.queue.filter(b=>{if(b.power<=PROTEGO_MAX){this.protegoBlock(s,b);return false}return true});
+    this.nextCounter(s);
+    return true;
+  }
+  counterKey(id,code){
+    const s=this.S[id], c=s.counter; if(!c||c.ai||!this.canAct(s)) return;
+    if(code===c.seal[c.idx].k){c.idx++; this.fx.rune(s,true); if(c.idx>=c.seal.length) this.counterOK(s);}
+    else this.counterNG(s,'印ミス');
+  }
+  enterZone(s,b){
+    if(b.kind==='breaker'){this.remove(b); this.fx.dissipate(b); return;} // 相殺専用：本体には届かない
+    b.state='lock'; b.pos=s.id==='P'?ZONE:DIST-ZONE;
+    if(s.protego>0&&b.power<=PROTEGO_MAX){this.protegoBlock(s,b);return;}
+    s.queue.push(b); this.fx.alarm(s,b); this.nextCounter(s);
+  }
+  nextCounter(s){
+    if(s.counter||this.state!=='fight') return;
+    const b=s.queue.shift(); if(!b) return;
+    if(s.id==='E'&&this.ai){
+      const d=this.diff, lim=counterLimit(b.power), mg=s.mirage>0;
+      s.counter={bolt:b,ai:true,t:Math.min(lim-.05,rand(d.react[0],d.react[1])*(mg?1.2:1)),limit:lim,ok:Math.random()<d.counter-(mg?.3:0),seal:genCounterSeal(b.power),idx:0};
+    }else{
+      const lim=counterLimit(b.power);
+      s.counter={bolt:b,seal:genCounterSeal(b.power),idx:0,t:lim,limit:lim};
+    }
+    this.fx.counterStart(s,b);
+  }
+  counterOK(s){const b=s.counter.bolt; s.counter=null; s.stats.counter++; this.remove(b); this.fx.counterOK(s,b); this.nextCounter(s);}
+  counterNG(s,why){const b=s.counter.bolt; s.counter=null; b.state='strike'; this.fx.counterNG(s,b,why); this.nextCounter(s);}
+  protegoBlock(s,b){this.remove(b); this.fx.protegoBlock(s,b);}
+  remove(b){const i=this.bolts.indexOf(b); if(i>=0) this.bolts.splice(i,1);}
+  hit(s,b){
+    this.remove(b);
+    if(s.protego>0&&b.power<=PROTEGO_MAX){this.fx.protegoBlock(s,b);return;}
+    const foe=this.foe(s), dmg=b.power;
+    s.hp=Math.max(0,s.hp-dmg); foe.stats.dmg+=dmg;
+    this.fx.hit(s,b,dmg);
+    if(s.hp<=0){this.state='ko'; this.loser=s.id; this.fx.ko(s); return;}
+    if(b.kind==='stun') this.applyStun(s);
+    else if(b.kind==='mirage') this.applyMirage(s);
+    else if(b.kind==='drain') this.drain(foe,dmg*DRAIN_RATE,b);
+  }
+  applyStun(s){
+    s.stun=STUN_DUR; this.foe(s).stats.stun++;
+    if(s.cast){const c=s.cast; s.cast=null; s.cd[c.i]=Math.max(s.cd[c.i],1);} // the seal in progress is broken
+    this.fx.stun(s);
+  }
+  applyMirage(s){
+    s.mirage=MIRAGE_DUR;
+    if(s.cast&&s.cast.ai&&!s.cast.fail) s.cast.fail=Math.random()<.4;
+    if(s.counter&&s.counter.ai&&s.counter.ok) s.counter.ok=Math.random()>.3;
+    this.fx.mirage(s);
+  }
+  drain(s,amt,b){
+    amt=Math.round(amt); if(amt<=0) return;
+    const heal=Math.min(amt,MAXHP-s.hp); s.hp+=heal; s.stats.heal+=heal;
+    let cut=0; if(heal<amt&&s.protegoCd>0){cut=Math.min(DRAIN_CD_CUT,s.protegoCd); s.protegoCd-=cut;} // overflow feeds Protego
+    this.fx.drain(s,heal,cut,b);
+  }
+  resolveClashes(){
+    for(;;){
+      // the deepest-crossed pair resolves first (pairs that already passed through each other are skipped)
+      let a=null,e=null,ov=-1;
+      for(const p of this.bolts){ if(p.owner!=='P'||p.state!=='fly') continue;
+        for(const q of this.bolts){ if(q.owner!=='E'||q.state!=='fly'||p.pos<q.pos||(p.passed&&p.passed.has(q.id))) continue;
+          if(p.pos-q.pos>ov){ov=p.pos-q.pos;a=p;e=q;} } }
+      if(!a) return;
+      const at=clamp((a.pos+e.pos)/2,ZONE+1,DIST-ZONE-1), brk=a.kind==='breaker'||e.kind==='breaker';
+      if(!brk&&(a.kind==='phantom'||e.kind==='phantom')){ // 貫通：相殺せずに互いをすり抜ける
+        (a.passed||(a.passed=new Set())).add(e.id); (e.passed||(e.passed=new Set())).add(a.id);
+        this.fx.pierce(at,a,e); continue;
+      }
+      if(brk){ // 潰し：威力に関係なく、衝突した魔弾ごと消滅
+        this.remove(a); this.remove(e);
+        if(a.kind==='breaker'&&e.kind!=='breaker') this.S.P.stats.clash++;
+        if(e.kind==='breaker'&&a.kind!=='breaker') this.S.E.stats.clash++;
+        this.fx.annul(at,a,e); continue;
+      }
+      const pa=a.power, pe=e.power, diff=pa-pe;
+      let win=null;
+      if(diff>0){a.power=diff;a.pos=at;this.remove(e);win=a;this.S.P.stats.clash++;}
+      else if(diff<0){e.power=-diff;e.pos=at;this.remove(a);win=e;this.S.E.stats.clash++;}
+      else{this.remove(a);this.remove(e);}
+      this.fx.clash(at,a,e,pa,pe,win);
+      if(a.kind==='drain'&&diff>=0) this.drain(this.S.P,pe*DRAIN_RATE,a);
+      if(e.kind==='drain'&&diff<=0) this.drain(this.S.E,pa*DRAIN_RATE,e);
+    }
+  }
+  update(dt){
+    if(this.state!=='fight') return;
+    this.t+=dt;
+    for(const s of [this.S.P,this.S.E]){
+      for(let i=0;i<4;i++) s.cd[i]=Math.max(0,s.cd[i]-dt);
+      s.frozen=Math.max(0,s.frozen-dt);
+      if(s.stun>0){s.stun=Math.max(0,s.stun-dt); if(s.stun===0) this.fx.stunEnd(s);}
+      s.mirage=Math.max(0,s.mirage-dt);
+      if(s.protego>0){s.protego=Math.max(0,s.protego-dt); if(s.protego===0) this.fx.protegoDown(s);}
+      s.protegoCd=Math.max(0,s.protegoCd-dt);
+      if(s.cast&&!s.cast.ai){s.cast.t-=dt; if(s.cast.t<=0) this.fizzle(s,'時間切れ');}
+      if(s.counter&&s.stun<=0){ // a stunned duelist's counter clock is held, not burned
+        s.counter.t-=dt;
+        if(s.counter.ai){
+          const c=s.counter, prog=1-c.t/Math.max(.01,c.t+ (c.elapsed=(c.elapsed||0)+dt));
+          c.idx=Math.min(c.seal.length,Math.floor(prog*c.seal.length));
+          if(c.t<=0) c.ok?this.counterOK(s):this.counterNG(s,'');
+        }else if(s.counter.t<=0) this.counterNG(s,'時間切れ');
+      }
+    }
+    if(this.ai) this.updateAI(dt);
+    const bt=dt*(this.S.P.counter?COUNTER_SLOW:1);
+    for(const b of this.bolts){
+      const dir=b.owner==='P'?1:-1; b.age+=bt;
+      if(b.state==='fly') b.pos+=dir*b.speed*bt;
+      else if(b.state==='strike') b.pos+=dir*STRIKE_SPEED*bt;
+    }
+    this.resolveClashes();
+    for(const b of [...this.bolts]){
+      if(this.state!=='fight') break;
+      if(b.state==='fly'){
+        if(b.owner==='E'&&b.pos<=ZONE) this.enterZone(this.S.P,b);
+        else if(b.owner==='P'&&b.pos>=DIST-ZONE) this.enterZone(this.S.E,b);
+      }else if(b.state==='strike'){
+        if(b.owner==='E'&&b.pos<=0) this.hit(this.S.P,b);
+        else if(b.owner==='P'&&b.pos>=DIST) this.hit(this.S.E,b);
+      }
+    }
+  }
+  updateAI(dt){
+    const E=this.S.E, d=this.diff;
+    if(E.cast&&E.cast.ai){
+      const c=E.cast; c.t-=dt; c.idx=Math.min(c.seal.length,Math.floor((1-c.t/c.limit)*c.seal.length));
+      if(c.t<=0){c.fail?this.fizzle(E,'印の乱れ'):this.launch(E);}
+    }
+    if(E.stun>0) return;
+    if(E.protego<=0&&E.protegoCd<=0){
+      const th=this.bolts.find(b=>b.owner==='P'&&b.state!=='strike'&&b.power<=PROTEGO_MAX&&b.kind!=='breaker'&&b.pos>24&&!b.aiSeen);
+      if(th){th.aiSeen=true; if(Math.random()<d.protego) this.protego('E');}
+    }
+    if(E.cast||E.frozen>0) return;
+    this.aiThink-=dt; if(this.aiThink>0) return;
+    const ready=[0,1,2,3].filter(i=>E.load[i]&&E.cd[i]<=0&&E.uses[i]>0);
+    const kindOf=j=>E.load[j].kind;
+    let i;
+    // Null Breaker is kept for a big incoming bolt or a phantom (nothing else stops it in flight)
+    const brk=ready.find(j=>kindOf(j)==='breaker');
+    const threat=this.bolts.find(b=>b.owner==='P'&&b.state==='fly'&&b.pos<26&&(b.kind==='phantom'||b.power>=30));
+    if(brk!==undefined&&threat&&Math.random()<d.smart) i=brk;
+    const inc=this.bolts.filter(b=>b.owner==='P'&&b.state==='fly'&&b.pos<28&&b.kind!=='phantom'&&b.kind!=='breaker').sort((a,b)=>b.pos-a.pos)[0];
+    if(i===undefined&&inc&&Math.random()<d.smart){
+      const better=ready.filter(j=>!kindOf(j)&&E.load[j].power>inc.power).sort((a,b)=>E.load[a].power-E.load[b].power);
+      if(better.length) i=better[0];
+    }
+    if(i===undefined){
+      const pool=ready.filter(j=>kindOf(j)!=='breaker');
+      if(!pool.length){this.aiThink=.3;return;}
+      i=pick(pool);
+    }
+    const sp=E.load[i], mg=E.mirage>0, t=sealLen(sp)*d.perKey*(mg?1.3:1)+rand(.2,.5);
+    E.cast={i,sp,seal:genCastSeal(sp),idx:0,t,limit:t,ai:true,fail:Math.random()<d.fail+(mg?.35:0)};
+    this.fx.castStart(E);
+    this.aiThink=rand(d.think[0],d.think[1]);
+  }
+}
+
+/* =====================================================================
+   SELF-TEST SUITE  (runs the real Duel rules headless; window.runSelfTests())
+   ===================================================================== */
+function runSelfTests(){
+  const out=[];
+  const T=(name,fn)=>{try{const r=fn();out.push({name,ok:r===true,msg:r===true?'':String(r)});}catch(e){out.push({name,ok:false,msg:e.message});}};
+  const count=()=>{const c={};return {c,fx:new Proxy({},{get:(_,k)=>()=>{c[k]=(c[k]||0)+1}})}};
+  const STD=SPELLS.filter(s=>!s.kind);
+  const mk=(opt={})=>{const k=count();const d=new Duel({ai:false,fx:k.fx,loadP:opt.loadP||STD,loadE:STD});d.c=k.c;return d};
+  const run=(d,sec)=>{for(let t=0;t<sec;t+=1/120) d.update(1/120)};
+  const SP=id=>SPELLS.find(s=>s.id===id);
+  const put=(d,owner,power,pos,speed=15,kind=null)=>{const b={id:++d.uid,owner,sp:kind?SP(kind):SPELLS[0],kind,power,orig:power,pos,speed,state:'fly',age:0,passed:null};d.bolts.push(b);return b};
+  const wrongArrow=k=>CTR_KEYS.find(x=>x!==k);
+
+  T('印の難易度差：全魔法で「反魔法の印 < 発動の印」・反魔法は矢印のみの短い早撃ち',()=>{
+    for(const s of SPELLS) for(let n=0;n<30;n++){
+      const c=genCastSeal(s), r=genCounterSeal(s.power);
+      if(!(r.length<c.length)) return `${s.en}: counter ${r.length} >= cast ${c.length}`;
+      if(c.length<3||c.length>5) return `${s.en}: cast len ${c.length}`;
+      if(!r.every(x=>CTR_KEYS.includes(x.k))) return 'counter seal not simple arrows';
+      if(!(counterLimit(s.power)<sealLimit(s))) return 'counter window should be a quick-draw (shorter than cast)';
+    }
+    return true;});
+  T('相殺 30 vs 20 → 自分の魔法が余剰威力10で直進',()=>{const d=mk();put(d,'P',30,24);put(d,'E',20,26);run(d,.2);
+    const b=d.bolts;return (b.length===1&&b[0].owner==='P'&&b[0].power===10&&d.c.clash===1)||JSON.stringify(b.map(x=>[x.owner,x.power]));});
+  T('相殺 20 vs 45 → 敵の魔法が余剰威力25で直進',()=>{const d=mk();put(d,'P',20,24);put(d,'E',45,26);run(d,.2);
+    const b=d.bolts;return (b.length===1&&b[0].owner==='E'&&b[0].power===25)||JSON.stringify(b.map(x=>[x.owner,x.power]));});
+  T('相殺 25 vs 25 → 両者消滅',()=>{const d=mk();put(d,'P',25,24);put(d,'E',25,26);run(d,.2);return d.bolts.length===0&&d.c.clash===1;});
+  T('連鎖相殺：自40 vs 敵15 → 自25 vs 敵20 → 自5が直進',()=>{const d=mk();put(d,'P',40,24);put(d,'E',15,26);put(d,'E',20,30);run(d,.6);
+    const b=d.bolts;return (b.length===1&&b[0].owner==='P'&&b[0].power===5&&d.c.clash===2)||JSON.stringify(b.map(x=>[x.owner,x.power]));});
+  T('相殺は距離11以上でのみ：反魔法圏(≤10)で停止中の弾とはすり抜けて衝突しない',()=>{const d=mk();const e=put(d,'E',30,12);run(d,.3);
+    if(e.state!=='lock'||e.pos!==ZONE) return 'not locked at 10';const p=put(d,'P',40,0,40);run(d,.9);
+    return (!d.c.clash&&p.power===40)||`clash=${d.c.clash} p=${p.power}`;});
+  T('距離10で強制反魔法へ移行（矢印2印・時間鈍化）',()=>{const d=mk();const e=put(d,'E',30,14);run(d,.4);const c=d.S.P.counter;
+    return (c&&c.bolt===e&&e.pos===ZONE&&c.seal.length===2&&c.seal.every(x=>CTR_KEYS.includes(x.k)))||'no counter';});
+  T('反魔法 成功 → 無傷で弾を破壊',()=>{const d=mk();put(d,'E',30,12);run(d,.3);for(const r of d.S.P.counter.seal) d.counterKey('P',r.k);run(d,2);
+    return (d.S.P.hp===MAXHP&&d.bolts.length===0&&d.c.counterOK===1)||`hp=${d.S.P.hp}`;});
+  T('反魔法 入力ミス → 威力ぶん直撃 (150-30=120)',()=>{const d=mk();put(d,'E',30,12);run(d,.3);d.counterKey('P',wrongArrow(d.S.P.counter.seal[0].k));run(d,1.5);
+    return d.S.P.hp===120||`hp=${d.S.P.hp}`;});
+  T('反魔法 時間切れ → 直撃',()=>{const d=mk();put(d,'E',40,12);run(d,4);return d.S.P.hp===110||`hp=${d.S.P.hp}`;});
+  T('プロテゴ：威力10の弾を印なしで自動無効化',()=>{const d=mk();d.protego('P');put(d,'E',10,16);run(d,2);
+    return (d.S.P.hp===MAXHP&&!d.S.P.counter&&d.bolts.length===0&&d.c.protegoBlock===1&&!d.c.counterStart)||`hp=${d.S.P.hp}`;});
+  T('プロテゴ：相殺後の余剰威力10以下（自15 vs 敵25→10）も無効化',()=>{const d=mk();d.protego('P');put(d,'P',15,24);put(d,'E',25,26);run(d,3);
+    return (d.c.clash===1&&d.c.protegoBlock===1&&d.S.P.hp===MAXHP&&!d.c.counterStart)||JSON.stringify(d.c);});
+  T('プロテゴ：余剰威力11は無効化せず反魔法へ',()=>{const d=mk();d.protego('P');put(d,'P',15,24);put(d,'E',26,26);run(d,2);
+    const c=d.S.P.counter;return (c&&c.bolt.power===11&&!d.c.protegoBlock)||JSON.stringify(d.c);});
+  T('プロテゴ未発動なら威力10でも反魔法が必要',()=>{const d=mk();put(d,'E',10,14);run(d,.4);return !!d.S.P.counter;});
+  T('プロテゴ：反魔法待機中の威力10以下の弾にも後から発動で即無効化',()=>{const d=mk();put(d,'E',10,12);run(d,.3);d.protego('P');
+    return (!d.S.P.counter&&d.bolts.length===0&&d.c.protegoBlock===1)||'not blocked';});
+  T('プロテゴ：5秒で切れ、再使用は16秒後',()=>{const d=mk();d.protego('P');run(d,5.1);if(d.S.P.protego>0) return 'still on';
+    if(d.protego('P')) return 'reused too early';run(d,11);return d.protego('P');});
+  T('発動の印：正しく入力すると魔法が発射され、クールダウンへ',()=>{const d=mk();d.select('P',1);for(const r of d.S.P.cast.seal) d.castKey('P',r.k);
+    return (d.bolts.length===1&&d.bolts[0].power===20&&d.S.P.cd[1]>0)||'no launch';});
+  T('発動の印：反魔法の要素なし（表示どおりのQEZCのみ・5印のコメットも同様）',()=>{const d=mk({loadP:[SP('comet')]});d.select('P',0);const s=d.S.P.cast.seal;
+    if(s.length!==5||!s.every(x=>CAST_KEYS.includes(x.k)&&Object.keys(x).length===1)) return 'cast seal has extra elements';
+    for(const r of s) d.castKey('P',r.k);return d.bolts.length===1&&d.bolts[0].power===50;});
+  T('発動の印：矢印（反魔法キー）は詠唱に干渉しない',()=>{const d=mk();d.select('P',1);d.counterKey('P','ArrowUp');
+    return (d.S.P.cast&&d.S.P.cast.idx===0&&!d.S.P.frozen)||'arrow affected cast';});
+  T('発動の印：入力ミスで不発＋フリーズ（フリーズ中は選択不可）',()=>{const d=mk();d.select('P',0);const k=d.S.P.cast.seal[0].k;
+    d.castKey('P',CAST_KEYS.find(x=>x!==k));if(d.S.P.cast||d.bolts.length||!(d.S.P.frozen>0)) return 'no fizzle';
+    if(d.select('P',1)) return 'selected while frozen';run(d,FREEZE+.05);return d.select('P',1);});
+  T('発動の印：時間切れで不発',()=>{const d=mk();d.select('P',0);run(d,castLimit(10)+.1);return !d.S.P.cast&&d.S.P.frozen>0&&d.c.fizzle===1;});
+  T('リアルタイム同時操作：詠唱中でも反魔法できる',()=>{const d=mk();put(d,'E',20,12);run(d,.3);d.select('P',1);
+    for(const r of d.S.P.counter.seal) d.counterKey('P',r.k);for(const r of d.S.P.cast.seal) d.castKey('P',r.k);
+    return d.S.P.hp===MAXHP&&d.bolts.length===1&&d.bolts[0].owner==='P';});
+  T('対称性：自弾が距離40（敵から10）で敵の反魔法へ、失敗で敵HP減少',()=>{const d=mk();put(d,'P',30,36);run(d,.4);if(!d.S.E.counter) return 'no E counter';
+    run(d,3);return d.S.E.hp===120||`hp=${d.S.E.hp}`;});
+  T('HP0で決着',()=>{const d=mk();d.S.P.hp=20;put(d,'E',25,12);run(d,4);return d.state==='ko'&&d.loser==='P';});
+  T('10ステージ：成功率（印・反魔法）とスピード（1印の秒数・間合い）がステージごとに厳しくなる',()=>{
+    if(STAGES.length!==10) return `${STAGES.length} stages`;
+    for(let i=1;i<10;i++){const a=STAGES[i-1],b=STAGES[i];
+      if(!(b.acc>a.acc&&b.counter>a.counter)) return `stage ${b.no}: accuracy not higher`;
+      if(!(b.perKey<a.perKey&&b.think[1]<a.think[1]&&b.react[1]<a.react[1])) return `stage ${b.no}: not faster`;}
+    return true;});
+  T('ステージ1と10で実際のAIの失敗率に差が出る',()=>{const fails=st=>{let f=0;for(let n=0;n<400;n++){const d=new Duel({ai:true,diff:st,loadP:STD,loadE:STD});d.aiThink=0;d.updateAI(0);if(d.S.E.cast.fail)f++;}return f;};
+    const a=fails(STAGES[0]),b=fails(STAGES[9]);return a>b+60||`stage1 ${a} stage10 ${b}`;});
+
+  // ---------------- 特殊魔法 ----------------
+  const failCounter=s=>{const d=s;return k=>d.counterKey(k,wrongArrow(d.S[k].counter.seal[0].k))};
+  T('潰し：威力50の魔弾と衝突 → 威力に関係なく両者消滅（余剰なし）',()=>{const d=mk();put(d,'P',0,24,19,'breaker');put(d,'E',50,26);run(d,.2);
+    return (d.bolts.length===0&&d.c.annul===1&&!d.c.clash&&d.S.P.stats.clash===1)||JSON.stringify(d.bolts.map(x=>[x.owner,x.power]));});
+  T('潰し：本体ダメージ0（距離10に届くと霧散し、反魔法も不要）',()=>{const d=mk();put(d,'P',0,30,19,'breaker');run(d,3);
+    return (d.S.E.hp===MAXHP&&!d.S.E.counter&&!d.c.counterStart&&d.bolts.length===0&&d.c.dissipate===1)||`hp=${d.S.E.hp}`;});
+  T('潰し：貫通弾も捕えて消滅させる',()=>{const d=mk();put(d,'P',0,24,19,'breaker');put(d,'E',20,26,15,'phantom');run(d,.2);
+    return (d.bolts.length===0&&d.c.annul===1&&!d.c.pierce)||'phantom escaped';});
+  T('貫通：自20 vs 敵40 → 相殺せず両弾が直進、双方が反魔法へ',()=>{const d=mk();const p=put(d,'P',20,24,15,'phantom'),e=put(d,'E',40,26);run(d,.3);
+    if(!(d.bolts.length===2&&d.c.pierce===1&&!d.c.clash&&p.power===20&&e.power===40)) return JSON.stringify(d.c);
+    run(d,1.5);if(!d.S.E.counter||d.S.E.counter.bolt!==p) return 'phantom did not reach the rival zone';
+    run(d,3);return (d.S.E.hp===130&&d.S.P.hp===110)||`E=${d.S.E.hp} P=${d.S.P.hp}`;});
+  T('貫通：連鎖でも全弾すり抜け、通常弾同士は従来どおり相殺',()=>{const d=mk();const p=put(d,'P',20,22,15,'phantom');put(d,'P',30,18);put(d,'E',15,26);put(d,'E',10,30);run(d,.6);
+    return (p.power===20&&d.c.pierce>=2&&d.c.clash>=1)||JSON.stringify(d.c);});
+  T('スタン：命中で詠唱中断・選択/印/プロテゴ不可 → 2秒で回復',()=>{const d=mk();put(d,'E',15,11,15,'stun');run(d,.2);failCounter(d)('P');d.select('P',0);run(d,.6);
+    const P=d.S.P;if(!(P.hp===135&&P.stun>0&&!P.cast&&d.c.stun===1)) return `hp=${P.hp} stun=${P.stun}`;
+    if(d.select('P',1)||d.protego('P')) return 'acted while stunned';run(d,STUN_DUR);return d.select('P',1);});
+  T('スタン：反魔法で消せば効果なし',()=>{const d=mk();put(d,'E',15,11,15,'stun');run(d,.2);for(const r of d.S.P.counter.seal) d.counterKey('P',r.k);run(d,1);
+    return (d.S.P.stun===0&&d.S.P.hp===MAXHP)||'stunned anyway';});
+  T('スタン：スタン中は反魔法の制限時間が止まり、解除後に迎撃できる',()=>{const d=mk();d.applyStun(d.S.P);put(d,'E',30,11);run(d,1.9);
+    const c=d.S.P.counter;if(!c||d.S.P.hp!==MAXHP) return 'counter burned during stun';d.counterKey('P',c.seal[0].k);if(c.idx!==0) return 'input accepted while stunned';
+    run(d,.2);for(const r of d.S.P.counter.seal) d.counterKey('P',r.k);return d.S.P.hp===MAXHP&&d.c.counterOK===1;});
+  T('スタン：1試合5回まで（6回目は選択不可）',()=>{const d=mk({loadP:[SP('stun')]});
+    for(let n=0;n<5;n++){if(!d.select('P',0)) return `select ${n+1} failed`;for(const r of d.S.P.cast.seal) d.castKey('P',r.k);run(d,SP('stun').cd+.05);d.bolts.length=0;}
+    return (d.S.P.uses[0]===0&&!d.select('P',0)&&d.c.launch===5)||`uses=${d.S.P.uses[0]}`;});
+  T('スタン：相殺で勝てば余剰威力のままスタン効果を保持',()=>{const d=mk();put(d,'P',15,24,18,'stun');put(d,'E',10,26);run(d,.2);
+    const b=d.bolts[0];return (d.bolts.length===1&&b.kind==='stun'&&b.power===5)||'kind lost';});
+  T('ドレイン：命中でダメージの半分を回復 (自100→110 / 敵150→130)',()=>{const d=mk();d.S.P.hp=100;put(d,'P',20,36,15,'drain');run(d,3.5);
+    return (d.S.E.hp===130&&d.S.P.hp===110&&d.c.drain===1)||`E=${d.S.E.hp} P=${d.S.P.hp}`;});
+  T('ドレイン：相殺で消した敵威力の半分を回復 (20 vs 15 → +8)',()=>{const d=mk();d.S.P.hp=100;put(d,'P',20,24,15,'drain');put(d,'E',15,26);run(d,.2);
+    return (d.S.P.hp===108&&d.bolts[0].power===5)||`P=${d.S.P.hp}`;});
+  T('ドレイン：HP満タン時は溢れた分でプロテゴ再使用を3秒短縮',()=>{const d=mk();d.protego('P');run(d,1);const cd=d.S.P.protegoCd;d.drain(d.S.P,10,null);
+    return (d.S.P.hp===MAXHP&&Math.abs(d.S.P.protegoCd-(cd-DRAIN_CD_CUT))<1e-6)||`cd ${cd}→${d.S.P.protegoCd}`;});
+  T('ドレイン：相殺に負けたら回復なし',()=>{const d=mk();d.S.P.hp=100;put(d,'P',20,24,15,'drain');put(d,'E',30,26);run(d,.2);return d.S.P.hp===100;});
+  T('攪乱：命中で4秒間ガイドが幻惑（真の印と偽の印が入れ替わる）',()=>{const d=mk();put(d,'E',15,11,15,'mirage');run(d,.2);failCounter(d)('P');run(d,.6);
+    const P=d.S.P;if(!(P.mirage>0&&P.hp===135)) return `mirage=${P.mirage}`;
+    let real=0,fake=0;for(let t=0;t<4;t+=.05){guideKey(P,'KeyQ',0,CAST_KEYS,t)==='KeyQ'?real++:fake++;}
+    if(!(real>8&&fake>8)) return `real ${real} fake ${fake}`;
+    P.mirage=0;return guideKey(P,'KeyQ',0,CAST_KEYS,1)==='KeyQ';});
+  T('攪乱：入力判定は本来の印のまま（表示だけが惑わされる）',()=>{const d=mk();d.applyMirage(d.S.P);d.select('P',0);for(const r of d.S.P.cast.seal) d.castKey('P',r.k);
+    return d.bolts.length===1&&!d.S.P.frozen;});
+  T('攪乱：AIの詠唱失敗率が上がる',()=>{let base=0,hex=0;for(let n=0;n<400;n++){for(const mg of [0,1]){const d=new Duel({ai:true,diff:STAGES[7],loadP:STD,loadE:STD});
+      d.S.E.mirage=mg?99:0;d.aiThink=0;d.updateAI(0);if(d.S.E.cast&&d.S.E.cast.fail)mg?hex++:base++;}}
+    return hex>base+80||`base ${base} hex ${hex}`;});
+  return out;
+}
+
+/* =====================================================================
+   AUDIO (synthesized — no external files)
+   ===================================================================== */
+const SFX={ctx:null,
+  init(){if(this.ctx)return;try{const C=window.AudioContext||window.webkitAudioContext;this.ctx=new C();
+    const comp=this.ctx.createDynamicsCompressor();this.out=this.ctx.createGain();this.out.gain.value=.55;this.out.connect(comp);comp.connect(this.ctx.destination);
+    const len=this.ctx.sampleRate;this.nb=this.ctx.createBuffer(1,len,len);const d=this.nb.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;}catch(e){this.ctx=null}},
+  tone(f,d,type='sine',v=.2,f2=0,delay=0){const c=this.ctx;if(!c)return;const t=c.currentTime+delay,o=c.createOscillator(),g=c.createGain();
+    o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(g).connect(this.out);o.start(t);o.stop(t+d+.05);},
+  noise(d,v=.3,f=1200,f2=0,q=1,type='bandpass',delay=0){const c=this.ctx;if(!c)return;const t=c.currentTime+delay,s=c.createBufferSource(),fl=c.createBiquadFilter(),g=c.createGain();
+    s.buffer=this.nb;s.loop=true;fl.type=type;fl.Q.value=q;fl.frequency.setValueAtTime(f,t);if(f2)fl.frequency.exponentialRampToValueAtTime(f2,t+d);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    s.connect(fl).connect(g).connect(this.out);s.start(t);s.stop(t+d+.05);},
+  tick(ctr){this.tone(ctr?1400:900+Math.random()*160,.09,'triangle',.13);},
+  cast(){this.tone(200,.35,'sine',.08,420);},
+  launch(p){this.noise(.5,.35,500,4200,1.6);this.tone(160+p*3,.35,'sawtooth',.05,55);this.tone(1200,.15,'sine',.05,300);},
+  clash(){[523,659,784,1046].forEach(f=>this.tone(f,1,'square',.035,f*.97));this.noise(.7,.55,3200,250,.8);this.tone(95,.7,'sine',.45,30);},
+  boom(){this.tone(120,.9,'sine',.6,26);this.noise(.9,.6,2000,100,.7,'lowpass');},
+  counter(){[880,1320,1760,2640].forEach((f,i)=>this.tone(f,.6,'triangle',.11,0,i*.045));this.noise(.35,.25,7000,2500,1,'highpass');},
+  fail(){this.tone(320,.45,'sawtooth',.12,70);},
+  fizzle(){this.noise(.6,.3,900,160,3);this.tone(220,.55,'square',.05,45);},
+  shield(){this.tone(440,.9,'sine',.12,880);this.tone(660,.9,'sine',.08,1320);},
+  block(){this.tone(1600,.35,'triangle',.15,700);this.noise(.25,.2,5000,2200,2);},
+  alarm(){this.tone(760,.1,'square',.07);this.tone(760,.1,'square',.07,0,.14);},
+  ko(){this.tone(70,2.2,'sine',.55,24);this.noise(1.8,.4,900,70,.5,'lowpass');},
+  annul(){this.tone(2200,.9,'sine',.12,180);this.tone(110,.8,'sine',.4,40);this.noise(.5,.4,9000,600,1.2,'highpass');},
+  pierce(){this.tone(1800,.5,'sine',.06,900);this.noise(.4,.15,3000,6000,4);},
+  stun(){for(let i=0;i<6;i++)this.tone(1800+i*240,.08,'square',.05,0,i*.04);this.noise(.35,.3,4000,1200,3);},
+  drain(){this.tone(300,.7,'sine',.12,900);this.tone(450,.7,'triangle',.06,1350,.08);},
+  mirage(){[0,1,2].forEach(i=>this.tone(600+i*130,.4,'sawtooth',.04,300+i*400,i*.06));},
+};
+
+/* =====================================================================
+   RENDERER  (Canvas2D, additive glow sprites, particles, shake, hitstop)
+   ===================================================================== */
+const cvs=$('#c'), g=cvs.getContext('2d');
+let W=0,H=0,DPR=1,BG=null,VIG=null;
+const L={}; const M=40; // bg margin for shake
+const xOf=pos=>L.pw+(L.ew-L.pw)*pos/DIST;
+const sideX=id=>id==='P'?L.px:L.ex;
+const wandX=id=>id==='P'?L.pw:L.ew;
+
+function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+const glowCache=new Map();
+function glow(c){
+  const k=c.join(',');let s=glowCache.get(k);if(s)return s;
+  s=document.createElement('canvas');s.width=s.height=128;const x=s.getContext('2d');
+  const gr=x.createRadialGradient(64,64,0,64,64,64);
+  gr.addColorStop(0,rgba(c,1));gr.addColorStop(.18,rgba(c,.6));gr.addColorStop(.45,rgba(c,.16));gr.addColorStop(1,rgba(c,0));
+  x.fillStyle=gr;x.fillRect(0,0,128,128);glowCache.set(k,s);return s;
+}
+function spr(c,x,y,r,a=1){g.globalAlpha=a;g.drawImage(glow(c),x-r,y-r,r*2,r*2);g.globalAlpha=1;}
+
+function resize(){
+  DPR=Math.min(2,window.devicePixelRatio||1);W=innerWidth;H=innerHeight;cvs.width=W*DPR|0;cvs.height=H*DPR|0;
+  const touch=document.body.classList.contains('touch'),portrait=H>W*1.05,shortTouch=touch&&!portrait&&H<520;
+  const s=Math.min(H/900,W/(portrait?(touch?560:640):1500))*1.15;L.s=s;
+  // phone portrait: the battle stage ends where the control dock begins, so the ruler never sits under the controls
+  const dockH=touch&&portrait?(document.getElementById('dock').offsetHeight||270):0;
+  L.gy=touch&&portrait?H-dockH-64*s:H*(portrait?.56:shortTouch?.66:.74);
+  L.px=W*(portrait?.11:shortTouch?.27:.15);L.ex=W-L.px;L.pw=L.px+74*s;L.ew=L.ex-74*s;L.lane=L.gy-153*s;L.ruler=L.gy+30*s;
+  BG=buildBG();VIG=buildVig();
+}
+function buildBG(){
+  const c=document.createElement('canvas'),w=W+M*2,h=H+M*2;c.width=w*DPR;c.height=h*DPR;const x=c.getContext('2d');x.scale(DPR,DPR);x.translate(M,M);
+  const R=mulberry(7),gy=L.gy;
+  let gr=x.createLinearGradient(0,-M,0,gy);
+  gr.addColorStop(0,'#04020a');gr.addColorStop(.3,'#140828');gr.addColorStop(.58,'#3d1036');gr.addColorStop(.8,'#9a2e3c');gr.addColorStop(.94,'#e7783a');gr.addColorStop(1,'#ffb35a');
+  x.fillStyle=gr;x.fillRect(-M,-M,w,gy+M);
+  for(let i=0;i<260;i++){const sx=R()*w-M,sy=R()*gy*.62-M,a=(1-sy/(gy*.62))*R()*.9;x.fillStyle=`rgba(255,240,220,${a})`;const r=R()<.06?1.6:R()*1.1+.3;x.beginPath();x.arc(sx,sy,r,0,7);x.fill();}
+  // blood sun
+  const sx=W*.5,sy=gy-H*.13,sr=H*.15;
+  x.globalCompositeOperation='lighter';
+  gr=x.createRadialGradient(sx,sy,sr*.5,sx,sy,sr*4.2);gr.addColorStop(0,'rgba(255,150,70,.55)');gr.addColorStop(.35,'rgba(200,60,70,.18)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  x.fillStyle=gr;x.fillRect(-M,-M,w,h);
+  x.globalCompositeOperation='source-over';
+  gr=x.createLinearGradient(0,sy-sr,0,sy+sr);gr.addColorStop(0,'#ffe2a0');gr.addColorStop(.5,'#ff8a44');gr.addColorStop(1,'#d83a3a');
+  x.fillStyle=gr;x.beginPath();x.arc(sx,sy,sr,0,7);x.fill();
+  x.fillStyle='rgba(60,10,40,.55)';
+  for(let i=0;i<6;i++){const yy=sy+sr*.15+i*sr*.15,hh=1.5+i*1.6;x.fillRect(sx-sr,yy,sr*2,hh);}
+  // cloud streaks
+  for(let i=0;i<9;i++){const cy=sy-sr*1.4+R()*sr*2.2,cx=R()*W,cw=W*(.25+R()*.35),ch=4+R()*9;
+    gr=x.createLinearGradient(cx-cw/2,0,cx+cw/2,0);gr.addColorStop(0,'rgba(40,10,40,0)');gr.addColorStop(.5,`rgba(${40+R()*30|0},10,${40+R()*20|0},.75)`);gr.addColorStop(1,'rgba(40,10,40,0)');
+    x.fillStyle=gr;x.beginPath();x.ellipse(cx,cy,cw/2,ch,0,0,7);x.fill();
+    x.fillStyle='rgba(255,140,90,.18)';x.beginPath();x.ellipse(cx,cy+ch*.6,cw/2.4,1.2,0,0,7);x.fill();}
+  // mesas (3 layers)
+  const layers=[['#6a2240',.62,.22,.9],['#3c1230',.52,.15,.95],['#1a0716',.42,.1,1]];
+  layers.forEach(([col,hgt,var_,a],li)=>{
+    x.fillStyle=col;x.globalAlpha=a;x.beginPath();x.moveTo(-M,gy);let px=-M;
+    while(px<W+M){const seg=90+R()*200,flat=R()<.45;const top=gy-H*(.03+R()*var_)*(li===2?.6:1)*hgt*1.25;
+      if(flat){x.lineTo(px+seg*.22,top);x.lineTo(px+seg*.78,top);x.lineTo(px+seg,gy-H*.01*R());}
+      else x.lineTo(px+seg*.5,gy-H*.02*R()*(3-li));
+      px+=seg;}
+    x.lineTo(W+M,gy);x.closePath();x.fill();x.globalAlpha=1;
+    // haze above each layer
+    gr=x.createLinearGradient(0,gy-H*.12,0,gy);gr.addColorStop(0,'rgba(255,120,80,0)');gr.addColorStop(1,`rgba(255,110,70,${.12-li*.035})`);x.fillStyle=gr;x.fillRect(-M,gy-H*.12,w,H*.12);
+  });
+  // town silhouettes
+  const s=L.s;x.fillStyle='#0d0410';
+  const bx=W*.30;x.fillRect(bx,gy-58*s,64*s,58*s);x.fillRect(bx-6*s,gy-64*s,76*s,8*s);x.fillRect(bx+70*s,gy-40*s,42*s,40*s);
+  x.fillStyle='rgba(255,170,80,.75)';x.fillRect(bx+10*s,gy-44*s,8*s,10*s);x.fillRect(bx+40*s,gy-44*s,8*s,10*s);x.fillStyle='#0d0410';
+  const wx=W*.68;x.fillRect(wx-2*s,gy-120*s,4*s,120*s);x.beginPath();x.moveTo(wx-22*s,gy);x.lineTo(wx-3*s,gy-110*s);x.lineTo(wx+3*s,gy-110*s);x.lineTo(wx+22*s,gy);x.closePath();x.globalAlpha=.85;x.fill();x.globalAlpha=1;
+  x.save();x.translate(wx,gy-118*s);for(let i=0;i<12;i++){x.rotate(Math.PI/6);x.fillRect(0,-2*s,26*s,4*s);}x.restore();
+  const tx=W*.6;x.fillRect(tx,gy-70*s,30*s,26*s);x.fillRect(tx+3*s,gy-44*s,3*s,44*s);x.fillRect(tx+24*s,gy-44*s,3*s,44*s);x.beginPath();x.moveTo(tx-3*s,gy-70*s);x.lineTo(tx+15*s,gy-84*s);x.lineTo(tx+33*s,gy-70*s);x.fill();
+  // ground
+  gr=x.createLinearGradient(0,gy,0,H+M);gr.addColorStop(0,'#3a1420');gr.addColorStop(.25,'#1c0911');gr.addColorStop(1,'#070306');
+  x.fillStyle=gr;x.fillRect(-M,gy,w,H+M-gy);
+  x.globalCompositeOperation='lighter';
+  gr=x.createRadialGradient(sx,gy,0,sx,gy,W*.6);gr.addColorStop(0,'rgba(255,140,70,.35)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  x.save();x.translate(sx,gy);x.scale(1,.12);x.translate(-sx,-gy);x.fillStyle=gr;x.fillRect(sx-W,gy-W,W*2,W*2);x.restore();
+  x.globalCompositeOperation='source-over';
+  for(let i=0;i<220;i++){const yy=gy+Math.pow(R(),1.6)*(H-gy+M),xx=R()*w-M,ln=(4+R()*40)*(1+(yy-gy)/H*3);
+    x.strokeStyle=`rgba(${R()<.5?'255,150,100':'0,0,0'},${.05+R()*.12})`;x.lineWidth=1;x.beginPath();x.moveTo(xx,yy);x.lineTo(xx+ln,yy);x.stroke();}
+  x.fillStyle='#090307';
+  [[.05,1],[.24,.7],[.43,.5],[.78,.65],[.95,1.1]].forEach(([fx,k])=>cactus(x,W*fx,gy+(k>.9?18*s:4*s),s*k*1.1,R));
+  // horizon line glow
+  x.globalCompositeOperation='lighter';x.fillStyle='rgba(255,190,120,.35)';x.fillRect(-M,gy-1,w,1.5);x.globalCompositeOperation='source-over';
+  return c;
+}
+function cactus(x,cx,by,s,R){
+  const r=(a,b,c,d)=>{x.beginPath();x.roundRect?x.roundRect(a,b,c,d,c/2):x.rect(a,b,c,d);x.fill();};
+  r(cx-7*s,by-90*s,14*s,90*s);r(cx-30*s,by-64*s,10*s,30*s);r(cx-30*s,by-40*s,26*s,9*s);r(cx+18*s,by-74*s,10*s,34*s);r(cx+4*s,by-46*s,24*s,9*s);
+}
+function buildVig(){
+  const c=document.createElement('canvas');c.width=W/2|0;c.height=H/2|0;const x=c.getContext('2d');
+  const gr=x.createRadialGradient(c.width/2,c.height*.48,Math.min(c.width,c.height)*.25,c.width/2,c.height*.5,Math.max(c.width,c.height)*.75);
+  gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(0,0,0,.8)');x.fillStyle=gr;x.fillRect(0,0,c.width,c.height);return c;
+}
+
+/* ---------- effect state ---------- */
+const R={parts:[],rings:[],texts:[],siphon:[],stunFx:{P:0,E:0},trails:new Map(),shake:0,flash:0,flashCol:[255,255,255],hitstop:0,tint:0,motes:[],shields:{P:0,E:0},shieldHit:{P:0,E:0},fall:{P:0,E:0},recoil:{P:0,E:0},hurt:{P:0,E:0}};
+for(let i=0;i<80;i++) R.motes.push({x:Math.random(),y:Math.random(),v:rand(.004,.02),p:Math.random()*7,s:rand(.6,2)});
+
+function part(o){if(R.parts.length>1600)R.parts.splice(0,80);R.parts.push(o);}
+function burst(x,y,col,n,spd,o={}){
+  for(let i=0;i<n;i++){const a=o.dir!==undefined?o.dir+rand(-o.spread,o.spread):rand(0,Math.PI*2),v=spd*rand(.15,1)*L.s,life=rand(.35,1)*(o.life||1);
+    part({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life,max:life,size:rand(1,2.6)*(o.size||1)*L.s,col:Math.random()<.25?[255,255,255]:col,type:o.type||'spark',drag:o.drag??2.4,gr:(o.g??260)*L.s,rot:rand(0,7),vr:rand(-12,12)});}
+}
+function ring(x,y,col,r0,r1,life,w=6,squash=1){R.rings.push({x,y,col,r0:r0*L.s,r1:r1*L.s,life,max:life,w:w*L.s,sq:squash});}
+function ftext(x,y,txt,col,size=22,o={}){R.texts.push({x,y,txt,col,size:size*Math.max(.75,L.s),life:o.life||1.5,max:o.life||1.5,vy:(o.vy??-34)*L.s,font:o.font||'Cinzel',w:o.w||900,big:o.big});}
+function smoke(x,y,n,col=[30,20,30]){for(let i=0;i<n;i++){const l=rand(.8,1.8);part({x:x+rand(-10,10)*L.s,y:y+rand(-10,10)*L.s,vx:rand(-40,40)*L.s,vy:rand(-50,-5)*L.s,life:l,max:l,size:rand(14,30)*L.s,col,type:'smoke',drag:1.2,gr:-10*L.s});}}
+
+const FX={
+  castStart(s){if(s.id==='P')SFX.cast();},
+  cancel(){},
+  rune(s,ctr){if(s.id==='P'){SFX.tick(ctr);const x=wandX('P');burst(x,L.lane,ctr?[255,90,120]:[255,210,120],6,160,{life:.5});}},
+  launch(s,b){const x=wandX(s.id),y=L.lane,c=b.sp.col,dir=s.id==='P'?0:Math.PI;
+    burst(x,y,c,22+b.power/2|0,420,{dir,spread:.6,life:.8});burst(x,y,b.sp.core,10,200,{type:'glow',size:3,life:.4});
+    ring(x,y,c,6,60+b.power,.35,5);R.shake+=2+b.power*.08;R.recoil[s.id]=1;SFX.launch(b.power);
+    ftext(x+(s.id==='P'?40:-40)*L.s,y-48*L.s,b.sp.en.toUpperCase(),c,14,{life:1.1,vy:-20});},
+  clash(at,a,e,pa,pe,win){
+    const x=xOf(at),y=L.lane;
+    burst(x,y,a.sp.col,50,620,{life:1.1});burst(x,y,e.sp.col,50,620,{life:1.1});burst(x,y,[255,255,255],18,300,{type:'glow',size:4,life:.5});
+    ring(x,y,[255,255,255],8,190,.55,9);ring(x,y,win?win.sp.col:[255,220,160],4,120,.7,4);ring(x,L.gy,[255,200,140],10,240,.8,4,.18);
+    R.flash=Math.max(R.flash,.38);R.flashCol=[255,240,220];R.shake+=12;R.hitstop=.09;SFX.clash();
+    const res=win?`${win===a?'YOU':'RIVAL'} ▶ ${win.power}`:'DRAW ✕';
+    ftext(x,y-70*L.s,`${pa} − ${pe} = ${Math.abs(pa-pe)}`,win?win.sp.col:[255,230,200],30,{life:1.8,vy:-22,big:1});
+    ftext(x,y-40*L.s,`相殺  ${res}`,[255,240,220],15,{life:1.8,vy:-22,font:'Shippori Mincho B1',w:800});},
+  alarm(s){if(s.id==='P')SFX.alarm();},
+  counterStart(s,b){if(s.id==='P'){R.tint=1;}},
+  counterOK(s,b){const x=xOf(b.pos),y=L.lane;
+    burst(x,y,b.sp.col,40,520,{type:'shard',size:2.2,life:1});burst(x,y,[255,236,170],30,380,{life:.8});
+    ring(x,y,[255,220,140],10,150,.5,8);ring(x,y,[255,255,255],4,80,.3,3);R.flash=Math.max(R.flash,.22);R.flashCol=[255,230,180];R.shake+=6;SFX.counter();
+    ftext(x,y-60*L.s,s.id==='P'?'反魔法 成功':'RIVAL 反魔法',s.id==='P'?[140,255,190]:[255,170,180],s.id==='P'?26:18,{font:'Shippori Mincho B1',w:800,big:1});},
+  counterNG(s,b,why){if(s.id==='P'){SFX.fail();ftext(xOf(b.pos),L.lane-60*L.s,`反魔法 失敗${why?' — '+why:''}`,[255,90,110],20,{font:'Shippori Mincho B1',w:800});}},
+  protegoUp(s){R.shields[s.id]=.001;SFX.shield();ftext(sideX(s.id),L.lane-120*L.s,'PROTEGO',[120,240,255],22,{big:1});},
+  protegoDown(){},
+  protegoBlock(s,b){const x=xOf(b.pos),y=L.lane;R.shieldHit[s.id]=1;
+    burst(x,y,[120,240,255],34,420,{life:.7});ring(x,y,[140,245,255],6,110,.45,6);SFX.block();
+    ftext(x,y-56*L.s,`PROTEGO 無効化 (${b.power})`,[150,245,255],18,{font:'Shippori Mincho B1',w:800});},
+  hit(s,b,dmg){const x=sideX(s.id),y=L.gy-110*L.s,c=b.sp.col;
+    burst(x,y,c,70+dmg,760,{life:1.2});burst(x,y,[255,255,255],24,360,{type:'glow',size:5,life:.6});smoke(x,y,10);
+    ring(x,y,c,10,240,.6,10);ring(x,L.gy,c,10,300,.8,5,.2);
+    R.flash=Math.max(R.flash,.35+dmg/120);R.flashCol=s.id==='P'?[255,40,60]:c;R.shake+=12+dmg*.35;R.hitstop=.12;R.hurt[s.id]=1;SFX.boom();
+    ftext(x,y-70*L.s,`-${dmg}`,s.id==='P'?[255,80,100]:[255,230,170],46,{life:1.6,big:1});},
+  fizzle(s,why){const x=wandX(s.id),y=L.lane;smoke(x,y,8,[60,70,90]);burst(x,y,[160,200,255],24,240,{type:'shard',life:.9});SFX.fizzle();
+    ftext(x,y-50*L.s,`不発 — ${why}`,[170,210,255],s.id==='P'?20:15,{font:'Shippori Mincho B1',w:800});},
+  ko(s){R.fall[s.id]=.001;R.flash=1;R.flashCol=[255,255,255];R.shake+=30;SFX.ko();setTimeout(showResult,2300);},
+  // ---- special spells ----
+  annul(at,a,e){const x=xOf(at),y=L.lane,brk=a.kind==='breaker'?a:e,o=brk===a?e:a;
+    burst(x,y,[255,255,255],40,700,{life:.9});burst(x,y,o.sp.col,30,260,{type:'shard',size:2,life:1});
+    ring(x,y,[235,240,255],6,230,.6,10);ring(x,y,[255,255,255],120,4,.45,3);ring(x,L.gy,[220,230,255],10,260,.8,4,.18);
+    R.flash=Math.max(R.flash,.45);R.flashCol=[230,238,255];R.shake+=10;R.hitstop=.1;SFX.annul();
+    ftext(x,y-70*L.s,o.kind==='breaker'?'潰し × 潰し':`${o.kind==='phantom'?'貫通弾':`威力 ${o.power}`} を 潰した`,[240,244,255],24,{life:1.8,vy:-22,font:'Shippori Mincho B1',w:800,big:1});
+    ftext(x,y-42*L.s,'NULL BREAK',[200,215,255],13,{life:1.6,vy:-22});},
+  dissipate(b){const x=xOf(b.pos),y=L.lane;burst(x,y,b.sp.col,26,220,{type:'glow',size:2,life:.7});ring(x,y,b.sp.col,4,70,.5,3);
+    ftext(x,y-46*L.s,'霧散（本体ダメージ 0）',[220,228,255],13,{font:'Shippori Mincho B1',w:800,life:1.2});},
+  pierce(at,a,e){const x=xOf(at),y=L.lane,ph=a.kind==='phantom'?a:e;
+    ring(x,y,ph.sp.col,4,90,.5,3);ring(x,y,[255,255,255],4,50,.3,2);burst(x,y,ph.sp.col,18,260,{type:'glow',size:1.6,life:.6});SFX.pierce();
+    ftext(x,y-64*L.s,'貫 通',ph.sp.col,24,{life:1.4,vy:-26,font:'Shippori Mincho B1',w:800,big:1});
+    ftext(x,y-40*L.s,'PHANTOM PASS',[240,230,255],11,{life:1.2,vy:-26});},
+  stun(s){const x=sideX(s.id),y=L.gy-180*L.s;R.stunFx[s.id]=1;burst(x,y,[255,230,80],40,420,{life:.8});ring(x,y,[255,236,120],6,120,.45,5);SFX.stun();
+    ftext(x,y-30*L.s,'STUN',[255,230,80],s.id==='P'?34:26,{big:1,life:1.6});
+    ftext(x,y-2*L.s,s.id==='P'?'2秒間 行動不能':'敵を 2秒 拘束',[255,246,190],13,{font:'Shippori Mincho B1',w:800,life:1.6});},
+  stunEnd(){},
+  mirage(s){const x=sideX(s.id),y=L.gy-140*L.s;burst(x,y,[70,255,170],30,300,{type:'glow',size:1.8,life:.9});burst(x,y,[255,60,210],20,300,{life:.7});SFX.mirage();
+    ftext(x,y-50*L.s,'幻 惑',[110,255,190],s.id==='P'?30:24,{font:'Shippori Mincho B1',w:800,big:1,life:1.6});
+    ftext(x,y-24*L.s,s.id==='P'?'印のガイドが狂う':'敵の印を攪乱',[200,255,230],13,{font:'Shippori Mincho B1',w:800,life:1.6});},
+  drain(s,heal,cut,b){const x=sideX(s.id),y=L.gy-110*L.s,fx=b?xOf(clamp(b.pos,0,DIST)):x;
+    for(let i=0;i<26;i++){const l=rand(.5,.9);R.siphon.push({x0:fx+rand(-20,20)*L.s,y0:L.lane+rand(-20,20)*L.s,x1:x,y1:y,t:-rand(0,.35),life:l,col:Math.random()<.4?[255,200,225]:[230,40,130]});}
+    SFX.drain();
+    setTimeout(()=>{ring(x,y,[255,90,170],10,110,.5,5);
+      ftext(x,y-90*L.s,heal>0?`+${heal}`:cut>0?`PROTEGO −${cut}s`:"HP MAX",heal>0?[120,255,170]:[150,245,255],heal>0?36:18,{big:1,life:1.5});
+      if(heal>0&&cut>0)ftext(x,y-62*L.s,`PROTEGO −${cut}s`,[150,245,255],14,{life:1.4});},420);},
+};
+
+/* ---------- character ---------- */
+function slingerPath(f){
+  const p=new Path2D();
+  const el=(cx,cy,rx,ry,rot=0)=>{p.moveTo(cx+rx*Math.cos(rot),cy+rx*Math.sin(rot));p.ellipse(cx,cy,rx,ry,rot,0,Math.PI*2);};
+  const quad=(...a)=>{p.moveTo(a[0],a[1]);for(let i=2;i<a.length;i+=2)p.lineTo(a[i],a[i+1]);p.closePath();};
+  quad(-18,0,-3,0,-1,-92,-15,-92); quad(5,0,22,0,13,-92,0,-92);
+  el(-8,-3,12,4); el(16,-3,12,4);
+  p.moveTo(-14,-152);p.bezierCurveTo(-24,-120,-30,-86,-42+f*8,-44);p.lineTo(-27+f*4,-50);p.lineTo(-13,-57+f);p.lineTo(-2,-53);p.lineTo(10,-60);p.lineTo(20,-96);p.lineTo(18,-152);p.closePath();
+  p.rect(-15,-158,33,70);
+  el(2,-151,22,9);
+  el(5,-170,11,11);
+  quad(-11,-180,-8,-201,4,-206,17,-201,19,-180);
+  el(4,-180,31,5.5,-.05);
+  p.moveTo(-4,-163);p.quadraticCurveTo(-28+f*6,-160+f*2,-50+f*12,-150+f*7);p.lineTo(-45+f*12,-144+f*7);p.quadraticCurveTo(-26,-152,-4,-155);p.closePath();
+  quad(8,-158,56,-155,57,-146,8,-143);
+  el(59,-150,5.5,5.5);
+  quad(-15,-152,-6,-150,-9,-100,-19,-103);
+  return p;
+}
+function drawSlinger(id,t){
+  const face=id==='P'?1:-1,x=sideX(id),y=L.gy,s=L.s,rim=id==='P'?[90,230,255]:[255,60,90];
+  const f=Math.sin(t*2.3+(id==='P'?0:1.9)),fall=R.fall[id],rec=R.recoil[id],hurt=R.hurt[id];
+  g.save();g.translate(x-face*(rec*4+hurt*10)*s,y);
+  if(fall)g.rotate(-face*Math.min(1.45,fall*1.45));
+  g.scale(face*s,s);
+  const p=slingerPath(f);
+  g.shadowColor=rgba(rim,.9);g.shadowBlur=24*DPR;g.fillStyle=rgba(rim,.95);
+  g.save();g.translate(2.4,-1.5);g.fill(p);g.restore();
+  g.shadowBlur=0;g.fillStyle=hurt>.3?`rgb(${60*hurt|0},10,14)`:'#08050b';g.fill(p);
+  g.strokeStyle='#3a2416';g.lineWidth=2.8;g.lineCap='round';g.beginPath();g.moveTo(60,-151);g.lineTo(74,-153);g.stroke();
+  g.restore();
+  if(!fall){
+    g.globalCompositeOperation='lighter';
+    spr(rim,x+face*10*s,y-171*s,7*s,.9);
+    const s2=duel&&duel.S[id],cc=s2&&s2.cast?s2.cast.sp.col:rim;
+    spr(cc,wandX(id),L.lane,(s2&&s2.cast?26:12)*s*(1+.15*Math.sin(t*9)),.9);
+    g.globalCompositeOperation='source-over';
+  }
+}
+
+/* ---------- world drawing ---------- */
+function drawRuler(t){
+  const y=L.ruler,s=L.s;
+  g.save();
+  g.globalCompositeOperation='lighter';
+  const zone=(a,b,c,al)=>{const x0=xOf(a),x1=xOf(b);const gr=g.createLinearGradient(0,y-6*s,0,y+6*s);gr.addColorStop(0,rgba(c,0));gr.addColorStop(.5,rgba(c,al));gr.addColorStop(1,rgba(c,0));g.fillStyle=gr;g.fillRect(x0,y-6*s,x1-x0,12*s);};
+  const pulseP=duel&&duel.S.P.counter?.5+.4*Math.sin(t*20):.22;
+  zone(0,ZONE,[255,50,80],pulseP);zone(DIST-ZONE,DIST,[255,50,80],duel&&duel.S.E.counter?.5:.18);zone(ZONE+1,DIST-ZONE-1,[255,200,120],.08);
+  g.globalCompositeOperation='source-over';
+  g.strokeStyle='rgba(255,220,170,.35)';g.lineWidth=1;g.beginPath();g.moveTo(xOf(0),y);g.lineTo(xOf(DIST),y);g.stroke();
+  g.font=`700 ${Math.max(9,10*s)}px Cinzel`;g.textAlign='center';g.fillStyle='rgba(255,225,190,.6)';
+  for(let d=0;d<=DIST;d+=5){const x=xOf(d),big=d%10===0;g.fillRect(x-.5,y-(big?6:3)*s,1,(big?12:6)*s);if(big)g.fillText(String(d),x,y+18*s);}
+  g.font=`700 ${Math.max(9,10*s)}px 'Shippori Mincho B1'`;g.fillStyle='rgba(255,120,140,.75)';
+  g.fillText('反魔法圏 ≤10',xOf(5),y-12*s);g.fillText('反魔法圏 ≤10',xOf(45),y-12*s);
+  g.fillStyle='rgba(255,210,150,.6)';g.fillText('相殺圏 11〜39',xOf(25),y-12*s);
+  if(duel) for(const b of duel.bolts){const x=xOf(b.pos);g.fillStyle=rgba(b.sp.col,.95);g.beginPath();g.moveTo(x,y-4*s);g.lineTo(x+4*s,y);g.lineTo(x,y+4*s);g.lineTo(x-4*s,y);g.fill();}
+  g.restore();
+}
+function boltY(b){
+  const st=b.sp.style,a=b.age,s=L.s,k=b.state==='fly'?1:.25;
+  let w=Math.sin(a*6+b.id)*2;
+  if(st==='viper')w=Math.sin(a*9+b.id)*13;else if(st==='gale')w=Math.sin(a*14)*5;else if(st==='ghost')w=Math.sin(a*5)*8+Math.sin(a*23)*2;
+  return L.lane+w*s*k+(b.state==='lock'?rand(-1.5,1.5)*s:0);
+}
+/* special-spell signatures, drawn additively around the bolt head */
+function drawSpecial(b,x,y,r,t,s){
+  const sp=b.sp,c=sp.col,dir=b.owner==='P'?1:-1,TAU=Math.PI*2;
+  const star=(cx,cy,R)=>{g.beginPath();for(let k=0;k<8;k++){const a=k*Math.PI/4,q=k%2?R*.32:R;g.lineTo(cx+Math.cos(a)*q,cy+Math.sin(a)*q);}g.closePath();g.fill();};
+  g.save();g.translate(x,y);
+  if(sp.kind==='breaker'){ // counter-rotating ward hexes + a forward shield face
+    spr([200,215,255],0,0,r*6,.35);
+    for(let j=0;j<2;j++){g.save();g.rotate(t*(j?-3.2:2.2));g.strokeStyle=rgba(j?c:[255,255,255],j?.55:.9);g.lineWidth=(j?1.4:2.2)*s;
+      g.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3,R2=r*(2.1+j*.75);g.lineTo(Math.cos(a)*R2,Math.sin(a)*R2);}g.closePath();g.stroke();g.restore();}
+    g.scale(dir,1);g.lineCap='round';
+    for(let j=0;j<3;j++){g.strokeStyle=rgba([255,255,255],.85-j*.25);g.lineWidth=(4-j)*s;g.beginPath();g.arc(-r*(.6+j*.5),0,r*3.1,-.95,.95);g.stroke();}
+  }else if(sp.kind==='stun'){ // orbiting four-point stars + jagged crackle
+    g.fillStyle=rgba([255,250,200],.95);
+    for(let k=0;k<4;k++){const a=t*7+k*TAU/4;star(Math.cos(a)*r*2.3,Math.sin(a)*r*1.3,(3.2+1.4*Math.sin(t*20+k))*s);}
+    g.strokeStyle=rgba(c,.9);g.lineWidth=1.3*s;
+    for(let j=0;j<2;j++){g.beginPath();const a0=rand(0,TAU);g.moveTo(0,0);for(let k=1;k<=4;k++)g.lineTo(Math.cos(a0)*r*.8*k+rand(-4,4)*s,Math.sin(a0)*r*.8*k+rand(-4,4)*s);g.stroke();}
+  }else if(sp.kind==='phantom'){ // afterimages + dashed spectral ring
+    for(let k=1;k<=4;k++)spr(c,-dir*k*r*1.5,Math.sin(t*9-k)*2*s,r*(2.2-k*.25),.32-k*.06);
+    g.rotate(t*3);g.setLineDash([4*s,5*s]);g.strokeStyle=rgba(sp.core,.65);g.lineWidth=1.4*s;g.beginPath();g.arc(0,0,r*2.4,0,TAU);g.stroke();g.setLineDash([]);
+  }else if(sp.kind==='drain'){ // motes spiralling *into* the bolt + trailing tendrils
+    for(let j=0;j<10;j++){const ph=(t*1.3+j/10)%1,a=t*4+j*2.4,R2=r*(3.6-ph*3.2);spr(j%3?c:sp.core,Math.cos(a)*R2,Math.sin(a)*R2,(2+ph*3)*s,.9*ph);}
+    g.strokeStyle=rgba(c,.5);g.lineWidth=1.6*s;
+    for(let j=0;j<3;j++){g.beginPath();for(let k=0;k<=12;k++){const xx=-dir*k*r*.55,yy=Math.sin(t*8+k*.7+j*2.1)*(k*.9+2)*s;k?g.lineTo(xx,yy):g.moveTo(xx,yy);}g.stroke();}
+  }else if(sp.kind==='mirage'){ // chromatic split + glitch slices
+    spr([255,60,210],-3*s,1*s,r*2.3,.55);spr([60,255,200],3*s,-1*s,r*2.3,.55);
+    for(let j=0;j<3;j++)if(Math.random()<.5){g.fillStyle=rgba(Math.random()<.5?[255,80,220]:c,.7);g.fillRect(rand(-r*3,r*3),rand(-r*2,r*2),rand(6,22)*s,rand(1.5,3.5)*s);}
+    g.strokeStyle=rgba(sp.core,.55);g.lineWidth=1.2*s;g.beginPath();g.ellipse(0,0,r*2.6,r*1.3,0,0,TAU);g.stroke();
+  }
+  g.restore();
+}
+function drawBolt(b,t,dt){
+  const sp=b.sp,c=sp.col,x=xOf(b.pos),y=boltY(b),s=L.s;
+  const r=(6+(b.kind==='breaker'?30:b.power)*.3)*s;
+  let tr=R.trails.get(b.id);if(!tr){tr=[];R.trails.set(b.id,tr);}
+  tr.push({x,y});const maxN=sp.style==='comet'?42:sp.style==='ghost'?20:28;while(tr.length>maxN)tr.shift();
+  g.globalCompositeOperation='lighter';
+  // ground reflection
+  g.save();g.translate(x,L.gy+6*s);g.scale(1,.16);spr(c,0,0,r*9,.35);g.restore();
+  // trail glow
+  const n=tr.length;
+  for(let i=0;i<n;i++){const k=i/n,p=tr[i];spr(c,p.x,p.y,r*(.6+2.2*k),.08+.28*k*k);}
+  // ribbon
+  if(n>2){g.lineCap='round';
+    for(let i=1;i<n;i++){const k=i/n;g.strokeStyle=rgba(sp.core,.55*k*k);g.lineWidth=r*.9*k;g.beginPath();g.moveTo(tr[i-1].x,tr[i-1].y);g.lineTo(tr[i].x,tr[i].y);g.stroke();}}
+  // style extras
+  if(sp.style==='thunder'){g.strokeStyle=rgba([220,210,255],.9);g.lineWidth=1.6*s;
+    for(let j=0;j<3;j++){g.beginPath();let px=x,py=y;g.moveTo(px,py);const ang=rand(0,7),len=r*rand(2,4.5);
+      for(let k=1;k<=5;k++){px=x+Math.cos(ang)*len*k/5+rand(-6,6)*s;py=y+Math.sin(ang)*len*k/5+rand(-6,6)*s;g.lineTo(px,py);}g.stroke();}}
+  if(sp.style==='crimson'||sp.style==='comet'){g.save();g.translate(x,y);g.rotate(t*(sp.style==='comet'?-3:4));g.strokeStyle=rgba(c,.8);g.lineWidth=1.6*s;
+    for(let j=0;j<2;j++){g.beginPath();g.arc(0,0,r*(2+j*.7),j*1.5,j*1.5+Math.PI*1.2);g.stroke();}
+    for(let j=0;j<6;j++){g.rotate(Math.PI/3);g.fillStyle=rgba(sp.core,.9);g.fillRect(r*2.3,-1.2*s,4*s,2.4*s);}g.restore();}
+  if(sp.style==='gale'){g.save();g.translate(x,y);g.rotate(-t*12);g.strokeStyle=rgba(sp.core,.7);g.lineWidth=1.5*s;
+    for(let j=0;j<3;j++){g.rotate(Math.PI*2/3);g.beginPath();g.arc(0,0,r*1.8,0,1.4);g.stroke();}g.restore();}
+  if(sp.kind)drawSpecial(b,x,y,r,t,s);
+  // head
+  const fl=sp.style==='ghost'?.6+.4*Math.sin(t*30):sp.kind==='phantom'?.45+.25*Math.sin(t*22):1;
+  spr(c,x,y,r*5,.55*fl);spr(c,x,y,r*2.2,.95*fl);spr(sp.core,x,y,r*1.1,1);
+  g.fillStyle='#fff';g.beginPath();g.arc(x,y,r*.38,0,7);g.fill();
+  // emission
+  const rate=(b.state==='lock'?60:30+b.power)*dt;const dir=b.owner==='P'?Math.PI:0;
+  for(let i=0;i<rate;i++)part({x:x+rand(-r,r)*.4,y:y+rand(-r,r)*.4,vx:Math.cos(dir+rand(-.5,.5))*rand(40,220)*s,vy:rand(-60,60)*s,life:rand(.2,.6),max:.6,size:rand(.8,2)*s,col:Math.random()<.3?sp.core:c,
+    type:sp.style==='frost'&&Math.random()<.4?'shard':sp.style==='comet'&&Math.random()<.5?'ember':'spark',drag:3,gr:(sp.style==='comet'?120:40)*s,rot:rand(0,7),vr:rand(-10,10)});
+  // lock state (forced counter) — warning sigil
+  if(b.state==='lock'){g.save();g.translate(x,y);const pu=.5+.5*Math.sin(t*18);
+    g.strokeStyle=rgba([255,60,90],.6+.4*pu);g.lineWidth=2*s;g.rotate(t*2);
+    g.beginPath();for(let j=0;j<6;j++){const a=j*Math.PI/3;g.lineTo(Math.cos(a)*r*3.2,Math.sin(a)*r*3.2);}g.closePath();g.stroke();
+    g.rotate(-t*4);g.beginPath();for(let j=0;j<3;j++){const a=j*2*Math.PI/3;g.lineTo(Math.cos(a)*r*3.8,Math.sin(a)*r*3.8);}g.closePath();g.stroke();
+    g.beginPath();for(let j=0;j<3;j++){const a=j*2*Math.PI/3+Math.PI;g.lineTo(Math.cos(a)*r*3.8,Math.sin(a)*r*3.8);}g.closePath();g.stroke();
+    g.restore();}
+  g.globalCompositeOperation='source-over';
+  // power label
+  g.font=`900 ${Math.max(11,15*s)}px Cinzel`;g.textAlign='center';g.fillStyle=rgba(sp.core,.95);g.shadowColor=rgba(c,1);g.shadowBlur=10*DPR;
+  if(b.kind==='breaker')g.font=`800 ${Math.max(11,14*s)}px 'Shippori Mincho B1'`;
+  g.fillText(b.kind==='breaker'?'極大':String(b.power),x,y-r*2.2-6*s);
+  if(b.kind){g.font=`800 ${Math.max(9,11*s)}px 'Shippori Mincho B1'`;g.fillStyle=rgba(c,.95);g.fillText(`◆ ${sp.tag}`,x,y+r*2.4+12*s);}
+  g.shadowBlur=0;
+}
+/* lingering status on a duelist: stun stars over the hat, mirage glitch ghosts */
+function drawStatus(id,t){
+  const s=duel&&duel.S[id];if(!s||R.fall[id])return;
+  const x=sideX(id),hy=L.gy-200*L.s,sc=L.s;
+  g.save();g.globalCompositeOperation='lighter';
+  if(s.stun>0){const a=Math.min(1,s.stun/.3);spr([255,220,60],x,hy,46*sc,.4*a);g.fillStyle=rgba([255,240,150],a);
+    for(let k=0;k<5;k++){const an=t*5+k*Math.PI*2/5,sx=x+Math.cos(an)*30*sc,sy=hy+Math.sin(an)*8*sc;
+      g.beginPath();for(let j=0;j<8;j++){const q=j*Math.PI/4,rr=(j%2?2:6)*sc;g.lineTo(sx+Math.cos(q)*rr,sy+Math.sin(q)*rr);}g.closePath();g.fill();}}
+  if(s.mirage>0){const a=Math.min(1,s.mirage/.4);
+    for(let k=0;k<2;k++){const ox=Math.sin(t*13+k*3)*7*sc;spr(k?[255,60,210]:[70,255,170],x+ox,L.gy-110*sc,70*sc,.12*a);}
+    if(Math.random()<.35){g.fillStyle=rgba(Math.random()<.5?[255,70,210]:[70,255,170],.5*a);g.fillRect(x+rand(-50,50)*sc,L.gy-rand(20,200)*sc,rand(20,60)*sc,rand(2,4)*sc);}}
+  g.restore();g.globalCompositeOperation='source-over';
+}
+function drawSiphon(dt){
+  if(!R.siphon.length)return;g.save();g.globalCompositeOperation='lighter';
+  for(let i=R.siphon.length-1;i>=0;i--){const p=R.siphon[i];p.t+=dt;if(p.t>p.life){R.siphon.splice(i,1);continue;}if(p.t<0)continue;
+    const k=p.t/p.life,e=k*k*(3-2*k),x=p.x0+(p.x1-p.x0)*e,y=p.y0+(p.y1-p.y0)*e-Math.sin(k*Math.PI)*70*L.s;spr(p.col,x,y,(9-5*k)*L.s,.9);}
+  g.restore();g.globalCompositeOperation='source-over';
+}
+function drawSigil(id,t){
+  const s=duel.S[id],c=s.cast;if(!c)return;
+  const x=wandX(id),y=L.lane,col=c.sp.col,sc=L.s,face=id==='P'?1:-1;
+  const prog=c.ai?1-c.t/c.limit:c.idx/c.seal.length,tl=c.ai?1:c.t/c.limit;
+  g.save();g.translate(x+face*30*sc,y);g.scale(.45,1);g.globalCompositeOperation='lighter';
+  const R1=58*sc;
+  g.strokeStyle=rgba(col,.75);g.lineWidth=2*sc;g.beginPath();g.arc(0,0,R1,0,7);g.stroke();
+  g.strokeStyle=rgba(col,.35);g.beginPath();g.arc(0,0,R1*.78,0,7);g.stroke();
+  g.save();g.rotate(t*1.5*face);g.strokeStyle=rgba(c.sp.core,.8);
+  for(let j=0;j<2;j++){g.beginPath();for(let k=0;k<3;k++){const a=k*2*Math.PI/3+j*Math.PI;g.lineTo(Math.cos(a)*R1*.78,Math.sin(a)*R1*.78);}g.closePath();g.stroke();}
+  for(let k=0;k<24;k++){g.rotate(Math.PI/12);g.fillStyle=rgba(col,k%3?.4:.9);g.fillRect(R1*.84,-1*sc,(k%3?4:8)*sc,2*sc);}g.restore();
+  g.strokeStyle=rgba([255,240,200],1);g.lineWidth=4*sc;g.beginPath();g.arc(0,0,R1*1.1,-Math.PI/2,-Math.PI/2+Math.PI*2*prog);g.stroke();
+  if(!c.ai){g.strokeStyle=rgba(tl<.3?[255,60,80]:[255,180,90],.8);g.lineWidth=2*sc;g.beginPath();g.arc(0,0,R1*1.22,-Math.PI/2,-Math.PI/2+Math.PI*2*tl);g.stroke();}
+  g.restore();g.globalCompositeOperation='source-over';
+}
+function drawShield(id,t,dt){
+  const s=duel?duel.S[id]:null;const on=s&&s.protego>0;
+  R.shields[id]=clamp(R.shields[id]+(on?dt*4:-dt*3),0,1);R.shieldHit[id]=Math.max(0,R.shieldHit[id]-dt*2.5);
+  const a=R.shields[id];if(a<=0)return;
+  const face=id==='P'?1:-1,x=sideX(id)+face*30*L.s,y=L.gy-100*L.s,rx=95*L.s,ry=140*L.s,fade=on&&s.protego<1?(.5+.5*Math.sin(t*30)):1,al=a*fade,hit=R.shieldHit[id];
+  g.save();g.globalCompositeOperation='lighter';g.translate(x,y);
+  const gr=g.createRadialGradient(0,0,rx*.3,0,0,rx*1.3);gr.addColorStop(0,'rgba(60,200,255,0)');gr.addColorStop(.8,`rgba(80,220,255,${.10*al+.25*hit})`);gr.addColorStop(1,'rgba(80,220,255,0)');
+  g.fillStyle=gr;g.beginPath();g.ellipse(0,0,rx*1.3,ry*1.1,0,0,7);g.fill();
+  g.strokeStyle=`rgba(140,245,255,${(.55+.4*Math.sin(t*6))*al+hit*.5})`;g.lineWidth=2.2*L.s;
+  g.beginPath();g.ellipse(0,0,rx,ry,0,-Math.PI/2*1.05,Math.PI/2*1.05,face<0);g.stroke();
+  g.lineWidth=1*L.s;g.strokeStyle=`rgba(140,245,255,${.25*al+hit*.4})`;
+  for(let j=-4;j<=4;j++){const yy=j*ry/5,xx=Math.sqrt(Math.max(0,1-(yy/ry)**2))*rx*face;g.beginPath();g.moveTo(xx*.7,yy);g.lineTo(xx,yy+ry*.09);g.lineTo(xx*.7,yy+ry*.18);g.stroke();}
+  g.restore();g.globalCompositeOperation='source-over';
+}
+function drawFrost(id,t){
+  const s=duel&&duel.S[id];if(!s||s.frozen<=0)return;
+  const x=wandX(id),y=L.lane,a=Math.min(1,s.frozen/.4);
+  g.save();g.globalCompositeOperation='lighter';spr([120,190,255],x,y,60*L.s,.5*a);
+  g.strokeStyle=`rgba(200,235,255,${.8*a})`;g.lineWidth=1.5*L.s;
+  for(let j=0;j<7;j++){const an=j*.9+1,len=(18+j*5%20)*L.s;g.beginPath();g.moveTo(x,y);g.lineTo(x+Math.cos(an)*len,y+Math.sin(an)*len);g.lineTo(x+Math.cos(an+.2)*len*.6,y+Math.sin(an+.2)*len*.6);g.stroke();}
+  g.restore();g.globalCompositeOperation='source-over';
+}
+function drawCounterRing(id,t){
+  const s=duel&&duel.S[id];if(!s||!s.counter)return;
+  const c=s.counter,b=c.bolt,x=xOf(b.pos),y=L.lane,k=c.t/c.limit,sc=L.s;
+  g.save();g.globalCompositeOperation='lighter';
+  g.strokeStyle=`rgba(255,60,90,${.9})`;g.lineWidth=3*sc;g.beginPath();g.arc(x,y,(40+110*k)*sc,0,7);g.stroke();
+  g.strokeStyle='rgba(255,200,210,.5)';g.lineWidth=1.2*sc;g.beginPath();g.arc(x,y,40*sc,0,7);g.stroke();
+  g.restore();g.globalCompositeOperation='source-over';
+}
+
+function updateFX(dt){
+  for(let i=R.parts.length-1;i>=0;i--){const p=R.parts[i];p.life-=dt;if(p.life<=0){R.parts.splice(i,1);continue;}
+    const d=Math.exp(-p.drag*dt);p.vx*=d;p.vy=p.vy*d+p.gr*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.rot+=p.vr*dt;}
+  for(let i=R.rings.length-1;i>=0;i--){R.rings[i].life-=dt;if(R.rings[i].life<=0)R.rings.splice(i,1);}
+  for(let i=R.texts.length-1;i>=0;i--){const tx=R.texts[i];tx.life-=dt;tx.y+=tx.vy*dt;tx.vy*=Math.exp(-2*dt);if(tx.life<=0)R.texts.splice(i,1);}
+  for(const m of R.motes){m.x+=m.v*dt;m.p+=dt;if(m.x>1.02)m.x=-.02;}
+  R.flash*=Math.exp(-dt*6);R.shake*=Math.exp(-dt*8);if(R.shake>40)R.shake=40;
+  for(const id of ['P','E']){R.recoil[id]*=Math.exp(-dt*10);R.hurt[id]*=Math.exp(-dt*5);if(R.fall[id])R.fall[id]=Math.min(1,R.fall[id]+dt*1.4);}
+  const want=duel&&duel.S.P.counter?1:0;R.tint+=(want-R.tint)*Math.min(1,dt*8);
+}
+function drawFX(){
+  g.globalCompositeOperation='source-over';
+  for(const p of R.parts)if(p.type==='smoke'){const k=p.life/p.max;g.fillStyle=rgba(p.col,.35*k);g.beginPath();g.arc(p.x,p.y,p.size*(1.8-k),0,7);g.fill();}
+  g.globalCompositeOperation='lighter';g.lineCap='round';
+  for(const p of R.parts){const k=p.life/p.max;
+    if(p.type==='spark'||p.type==='ember'){g.strokeStyle=rgba(p.col,k);g.lineWidth=p.size*(p.type==='ember'?1.6:1);g.beginPath();g.moveTo(p.x,p.y);g.lineTo(p.x-p.vx*.035,p.y-p.vy*.035);g.stroke();}
+    else if(p.type==='glow')spr(p.col,p.x,p.y,p.size*8*k,k);
+    else if(p.type==='shard'){g.save();g.translate(p.x,p.y);g.rotate(p.rot);g.fillStyle=rgba(p.col,k);const z=p.size*2.4;g.beginPath();g.moveTo(0,-z);g.lineTo(z*.45,0);g.lineTo(0,z);g.lineTo(-z*.45,0);g.fill();g.restore();}}
+  for(const r of R.rings){const k=r.life/r.max,e=1-Math.pow(k,2.2),rad=r.r0+(r.r1-r.r0)*e;
+    g.strokeStyle=rgba(r.col,k*.9);g.lineWidth=r.w*k+.5;g.beginPath();g.ellipse(r.x,r.y,rad,rad*r.sq,0,0,7);g.stroke();}
+  g.globalCompositeOperation='source-over';
+  g.textAlign='center';
+  for(const tx of R.texts){const k=Math.min(1,tx.life/tx.max*3),pop=tx.big?1+Math.max(0,(tx.life-tx.max+.15))*3:1;
+    g.font=`${tx.w} ${tx.size*pop}px '${tx.font}'`;g.globalAlpha=k;g.shadowColor=rgba(tx.col,1);g.shadowBlur=14*DPR;
+    g.lineWidth=4;g.strokeStyle='rgba(0,0,0,.6)';g.strokeText(tx.txt,tx.x,tx.y);g.fillStyle=rgba(tx.col,1);g.fillText(tx.txt,tx.x,tx.y);
+    g.shadowBlur=0;g.fillStyle='rgba(255,255,255,.8)';g.globalAlpha=k*.6;g.fillText(tx.txt,tx.x,tx.y);g.globalAlpha=1;}
+}
+
+function render(t,dt){
+  g.setTransform(DPR,0,0,DPR,0,0);
+  const sh=R.shake;g.translate(rand(-sh,sh)*.5,rand(-sh,sh)*.5);
+  g.drawImage(BG,-M,-M,W+M*2,H+M*2);
+  // living sky: sun pulse + fog
+  g.globalCompositeOperation='lighter';
+  spr([255,120,60],W*.5,L.gy-H*.13,H*.5*(1+.03*Math.sin(t*.8)),.18);
+  for(let i=0;i<3;i++){const fx=((t*12*(i+1)*L.s)%(W*1.6))-W*.3,fy=L.gy-H*(.02+i*.035);g.save();g.translate(fx,fy);g.scale(1,.12);spr([255,120,110],0,0,W*.45,.12);g.restore();}
+  for(const m of R.motes){g.globalAlpha=.25+.25*Math.sin(m.p*2);g.fillStyle='#ffc890';g.fillRect(m.x*W,(m.y*.9+.05)*H+Math.sin(m.p)*6,m.s,m.s);}g.globalAlpha=1;
+  g.globalCompositeOperation='source-over';
+  drawRuler(t);
+  drawSlinger('P',t);drawSlinger('E',t);
+  if(duel){drawShield('P',t,dt);drawShield('E',t,dt);drawFrost('P',t);drawFrost('E',t);drawSigil('P',t);drawSigil('E',t);
+    const live=new Set();for(const b of duel.bolts){live.add(b.id);drawBolt(b,t,dt);}for(const k of R.trails.keys())if(!live.has(k))R.trails.delete(k);
+    drawCounterRing('P',t);drawCounterRing('E',t);drawStatus('P',t);drawStatus('E',t);drawSiphon(dt);}
+  drawFX();
+  // post
+  g.setTransform(DPR,0,0,DPR,0,0);
+  if(R.tint>.01){g.fillStyle=`rgba(80,0,20,${.28*R.tint})`;g.fillRect(0,0,W,H);
+    const gr=g.createRadialGradient(W/2,H/2,H*.2,W/2,H/2,H*.9);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,`rgba(160,0,30,${.45*R.tint})`);g.fillStyle=gr;g.fillRect(0,0,W,H);}
+  g.drawImage(VIG,0,0,W,H);
+  if(R.flash>.01){g.globalCompositeOperation='lighter';g.fillStyle=rgba(R.flashCol,R.flash*.55);g.fillRect(0,0,W,H);g.globalCompositeOperation='source-over';}
+}
+
+/* =====================================================================
+   UI / GAME FLOW
+   ===================================================================== */
+let duel=null,chosen=['ember','frost','thunder','comet'];
+const ui={fP:$('#fP'),gP:$('#gP'),nP:$('#nP'),fE:$('#fE'),gE:$('#gE'),nE:$('#nE'),sP:$('#sP'),sE:$('#sE'),inc:$('#inc'),
+  seal:$('#seal'),sealName:$('#sealName'),sealRunes:$('#sealRunes'),sealT:$('#sealT'),
+  runePad:$('#runePad'),arrowPad:$('#arrowPad'),ctr:$('#counter'),ctrRunes:$('#ctrRunes'),ctrT:$('#ctrT'),ctrSub:$('#ctrSub'),ctrQ:$('#ctrQ'),deck:$('#deck'),ghost:{P:MAXHP,E:MAXHP},lastCast:null,lastCtr:null,cards:[]};
+const rgbVar=c=>`${c[0]} ${c[1]} ${c[2]}`;
+
+function buildMenu(){
+  const gEl=$('#spellGrid'),xEl=$('#specialGrid');gEl.innerHTML='';xEl.innerHTML='';
+  for(const sp of SPELLS){
+    const d=document.createElement('div');d.className='opt'+(sp.kind?' special':'')+(chosen.includes(sp.id)?' sel':'');d.style.setProperty('--c',rgbVar(sp.col));
+    d.innerHTML=sp.kind
+      ?`<div class="pw${sp.kind==='breaker'?' inf':''}">${powLabel(sp)}</div><div class="stag">${icon(sp.kind)}${sp.tag}${sp.uses?` ×${sp.uses}`:''}</div>
+        <div class="nm">${sp.jp}</div><div class="en">${sp.en}</div><div class="desc">${sp.desc}</div>
+        <div class="meta">発動 ${sealLen(sp)}印 · 再使用 ${spCd(sp)}秒 · 速度 ${sp.speed}</div>`
+      :`<div class="pw">${sp.power}</div><div class="nm">${sp.jp}</div><div class="en">${sp.en}</div>
+        <div class="pips">${'<i></i>'.repeat(sealLen(sp))}</div>
+        <div class="meta">発動 ${sealLen(sp)}印 · 反魔法 ${counterLen(sp.power)}印 · 速度 ${sp.speed}</div>`;
+    d.onclick=()=>{const i=chosen.indexOf(sp.id);if(i>=0)chosen.splice(i,1);else if(chosen.length<4)chosen.push(sp.id);else{chosen.shift();chosen.push(sp.id);}buildMenu();};
+    (sp.kind?xEl:gEl).appendChild(d);
+  }
+  $('#selCount').textContent=`${chosen.length} / 4 を選択`;$('#start').disabled=chosen.length!==4;
+}
+/* =====================================================
+   RED FREE GAMES 共通（他のゲーム・要望フォーム・アクセス解析・シェア）
+===================================================== */
+const SITE_URL='https://red-freegames.github.io/';
+for(const a of document.querySelectorAll('a.more'))a.href=SITE_URL;
+// 要望・バグ報告フォーム（共通のGoogleフォーム）。「対象のゲーム」に同じ名前の選択肢を追加すると選択済みで開く
+const GAME_NAME='HEXSLINGER 魔弾決闘';
+const FEEDBACK_VIEW='https://docs.google.com/forms/d/e/1FAIpQLSfJ2DevI46AJiB_kUAmPGOvckFRqzzSP_iCVd5qiikxr9SIOg/viewform';
+for(const a of document.querySelectorAll('a.fb-link'))a.href=`${FEEDBACK_VIEW}?usp=pp_url&entry.2056875219=${encodeURIComponent(GAME_NAME)}`;
+// アクセス解析（Googleアナリティクス4）。本番（github.io）でだけ計測し、画面には何も出さない
+const GA_ID='G-FC7LD0DJTQ';
+(function initAnalytics(){
+  if(!GA_ID||!/\.github\.io$/.test(location.hostname))return;
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=function(){dataLayer.push(arguments);};
+  gtag('js',new Date());gtag('config',GA_ID,{page_title:GAME_NAME});
+  const s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA_ID);document.head.appendChild(s);
+})();
+// ゲーム内の出来事を記録する（失敗しても遊びには影響させない）
+const track=(name,params)=>{try{if(window.gtag)gtag('event',name,params||{});}catch(e){}};
+function shareResult(){
+  if(!duel)return;const win=duel.loser==='E',st=STAGES[duel.stage-1],P=duel.S.P.stats;
+  const msg=(win?(st.no===STAGES.length?`【全10ステージ制覇】黄昏の魔弾卿 ヴァルドを撃ち倒した！`:`STAGE${st.no}「${st.name}」との決闘に勝利！`):`STAGE${st.no}「${st.name}」に敗れ、荒野に膝をついた……`)
+    +`\n与ダメージ${P.dmg}・相殺勝利${P.clash}・反魔法成功${P.counter}\n『${GAME_NAME}』`;
+  const q=new URLSearchParams({text:msg,hashtags:'HEXSLINGER'});
+  if(location.protocol.startsWith('http')&&/\.github\.io$/.test(location.hostname))q.set('url',location.href.split('#')[0]);
+  track('share_x',{stage:st.no,result:win?'win':'lose'});
+  window.open('https://twitter.com/intent/tweet?'+q.toString(),'_blank','noopener');
+}
+$('#share').onclick=shareResult;
+
+/* ---------- stages: progress is a per-browser convenience (works without storage, too) ---------- */
+const SAVE_KEY='hexslinger.cleared';
+let cleared=0;try{cleared=clamp(parseInt(localStorage.getItem(SAVE_KEY))||0,0,STAGES.length);}catch(e){}
+let stageNo=Math.min(cleared+1,STAGES.length);
+const unlocked=n=>n<=cleared+1;
+function saveClear(n){if(n<=cleared)return;cleared=n;try{localStorage.setItem(SAVE_KEY,String(n));}catch(e){}}
+const meter=(label,v,txt)=>`<div class="meter"><span>${label}</span><i><b style="width:${Math.round(clamp(v,0,1)*100)}%"></b></i><em>${txt}</em></div>`;
+function buildStages(){
+  const gEl=$('#stageGrid');gEl.innerHTML='';
+  for(const st of STAGES){
+    const b=document.createElement('button'),lock=!unlocked(st.no);
+    b.className='stg'+(st.no===stageNo?' on':'')+(st.no<=cleared?' done':'')+(lock?' lock':'')+(st.no===STAGES.length?' boss':'');b.disabled=lock;
+    b.innerHTML=`<b>${st.no}</b><small>${lock?'LOCKED':st.no<=cleared?'CLEAR ✓':st.no===STAGES.length?'BOSS':'OPEN'}</small>`;
+    b.onclick=()=>{stageNo=st.no;buildStages();};gEl.appendChild(b);
+  }
+  const st=STAGES[stageNo-1],spd=(STAGES[0].perKey-st.perKey)/(STAGES[0].perKey-STAGES[9].perKey);
+  $('#stageCount').textContent=`${cleared} / ${STAGES.length} 制覇`;
+  $('#stageCard').innerHTML=`<div class="who"><b>STAGE ${st.no}</b><span>${st.name}</span><small>${st.en}</small></div>
+    ${meter('① 印・反魔法の成功率',.08+.92*(st.no-1)/9,`印 ${Math.round(st.acc*100)}% · 反魔法 ${Math.round(st.counter*100)}%`)}
+    ${meter('② 発動のスピード',.08+.92*spd,`1印 ${st.perKey.toFixed(2)}秒 · 間合い ${st.think[0]}〜${st.think[1]}秒`)}
+    <div class="note">${st.specials?`特殊魔法を ${st.specials} つ使ってくる`:'基本魔法のみで挑んでくる'}</div>`;
+}
+
+function buildDeck(){
+  const d=ui.deck;d.innerHTML='';ui.cards=[];
+  duel.S.P.load.forEach((sp,i)=>{
+    const c=document.createElement('div');c.className='card glass'+(sp.kind?' special':'');c.style.setProperty('--c',rgbVar(sp.col));
+    c.innerHTML=`${sp.kind?'<div class="aura"></div>':''}<div class="key">${LABEL[SELECT_KEYS[i]]}</div><div class="pw${sp.kind==='breaker'?' inf':''}">${powLabel(sp)}</div>
+      ${sp.kind?`<div class="stag">${icon(sp.kind)}<span>${sp.tag}</span><em class="uses"></em></div>`:''}<div class="nm">${sp.jp}</div><div class="en">${sp.en}</div>
+      <div class="pips">${'<i></i>'.repeat(sealLen(sp))}</div><div class="cdov"></div><div class="cdt"></div>`;
+    c.onpointerdown=e=>{e.preventDefault();press('Select'+i);};d.appendChild(c);ui.cards.push(c);
+  });
+  const p=document.createElement('div');p.className='card glass pro';
+  p.innerHTML=`<div class="key">SPACE</div><div class="pw" style="font-size:22px;top:8px">≤10</div><div class="nm">プロテゴ</div><div class="en">Protego · auto-guard</div>
+    <div class="pips"><i></i><i></i><i></i></div><div class="cdov"></div><div class="cdt"></div>`;
+  p.onpointerdown=e=>{e.preventDefault();press('Space');};d.appendChild(p);ui.pro=p;
+}
+
+function startDuel(){
+  SFX.init();
+  const byPow=(a,b)=>(a.kind==='breaker'?99:a.power)-(b.kind==='breaker'?99:b.power)||!!a.kind-!!b.kind;
+  const loadP=chosen.map(id=>SPELLS.find(s=>s.id===id)).sort(byPow);
+  // rival: one quick shot, the stage's number of specials, the rest standard spells
+  const st=STAGES[stageNo-1];
+  const shuf=a=>[...a].sort(()=>Math.random()-.5),std=shuf(SPELLS.filter(s=>!s.kind)),spc=shuf(SPELLS.filter(s=>s.kind)).slice(0,st.specials);
+  const quick=std.find(s=>s.power<=15),loadE=[quick,...spc,...std.filter(s=>s!==quick)].slice(0,4).sort(byPow);
+  duel=new Duel({fx:FX,ai:true,diff:st,loadP,loadE});duel.stage=st.no;
+  $("#eName").innerHTML=`${st.name}<small>STAGE ${st.no}</small>`;
+  Object.assign(R,{parts:[],rings:[],texts:[],siphon:[],shake:0,flash:0,hitstop:0,tint:0});R.trails.clear();
+  for(const id of['P','E']){R.fall[id]=0;R.shields[id]=0;R.hurt[id]=0;}
+  ui.ghost={P:MAXHP,E:MAXHP};ui.lastCast=ui.lastCtr=null;
+  buildDeck();
+  $('#menu').classList.add('hide');$('#result').classList.add('hide');$('#hud').classList.remove('hide');ui.deck.classList.remove('hide');$('#dock').classList.remove('hide');
+  if(TOUCH)resize();
+  track('game_start',{stage:st.no,loadout:chosen.join(',')});
+  ftext(W/2,H*.42,'DRAW!',[255,220,150],64,{life:1.4,big:1,vy:-10,font:'Rye',w:400});SFX.clash();
+}
+function showResult(){
+  if(!duel)return;const win=duel.loser==='E',P=duel.S.P.stats,st=STAGES[duel.stage-1],last=st.no===STAGES.length;
+  if(win)saveClear(st.no);
+  track(win?'stage_clear':'game_over',{stage:st.no,hp:duel.S.P.hp,dmg:P.dmg});
+  $('#resStage').textContent=`STAGE ${st.no} · ${st.name}`;
+  $('#resT').textContent=win?(last?'LEGEND':'VICTORY'):'DEFEAT';$('#resT').className=win?'win':'lose';
+  $('#resJ').textContent=win?(last?'全10ステージ制覇 ― 黄昏の伝説となった':'決闘に勝利した'):'荒野に膝をついた';
+  $('#next').classList.toggle('hide',!(win&&!last));$('#again').classList.toggle('on',!(win&&!last));
+  $('#resStats').innerHTML=`<div><b>${P.dmg}</b><span>与ダメージ</span></div><div><b>${P.clash}</b><span>相殺勝利</span></div><div><b>${P.counter}</b><span>反魔法成功</span></div><div><b>${P.fizzle}</b><span>不発</span></div>`
+    +(P.heal?`<div><b>${P.heal}</b><span>吸収回復</span></div>`:'')+(P.stun?`<div><b>${P.stun}</b><span>スタン命中</span></div>`:'');
+  $('#result').classList.remove('hide');$('#seal').classList.add('hide');$('#counter').classList.add('hide');
+}
+$('#start').onclick=startDuel;$('#again').onclick=startDuel;
+$('#next').onclick=()=>{stageNo=Math.min(STAGES.length,duel.stage+1);startDuel();};
+$('#toMenu').onclick=()=>{duel=null;$('#result').classList.add('hide');$('#hud').classList.add('hide');ui.deck.classList.add('hide');$('#dock').classList.add('hide');$('#menu').classList.remove('hide');buildMenu();buildStages();};
+
+function chips(s,foe){
+  let h='';
+  if(s.protego>0)h+=`<span class="chip pr">PROTEGO ${s.protego.toFixed(1)}s</span>`;else if(s.protegoCd>0)h+=`<span class="chip">PROTEGO CD ${Math.ceil(s.protegoCd)}</span>`;
+  if(s.frozen>0)h+=`<span class="chip fz">FREEZE ${s.frozen.toFixed(1)}</span>`;
+  if(s.stun>0)h+=`<span class="chip st">${icon('stun')}STUN ${s.stun.toFixed(1)}</span>`;
+  if(s.mirage>0)h+=`<span class="chip mg">${icon('mirage')}幻惑 ${s.mirage.toFixed(1)}</span>`;
+  if(foe&&s.cast)h+=`<span class="chip cs">${s.cast.sp.kind?icon(s.cast.sp.kind):''}詠唱中：${s.cast.sp.jp}（${powLabel(s.cast.sp)}）</span>`;
+  if(s.counter)h+=`<span class="chip ct">反魔法中</span>`;
+  return h;
+}
+function updateUI(dt){
+  const P=duel.S.P,E=duel.S.E;
+  for(const [s,f,gh,n] of [[P,ui.fP,ui.gP,ui.nP],[E,ui.fE,ui.gE,ui.nE]]){
+    f.style.width=(s.hp/MAXHP*100)+'%';ui.ghost[s.id]+=(s.hp-ui.ghost[s.id])*Math.min(1,dt*2.2);gh.style.width=(ui.ghost[s.id]/MAXHP*100)+'%';n.textContent=s.hp;
+  }
+  const cp=chips(P,false),ce=chips(E,true);if(ui.sP._h!==cp){ui.sP.innerHTML=cp;ui.sP._h=cp;}if(ui.sE._h!==ce){ui.sE.innerHTML=ce;ui.sE._h=ce;}
+  const near=duel.bolts.filter(b=>b.owner==='E').sort((a,b)=>a.pos-b.pos)[0];
+  ui.inc.textContent=near?`INCOMING ${near.kind==='breaker'?'潰し':near.power} · DIST ${Math.max(0,near.pos).toFixed(0)}`:'';
+  P.load.forEach((sp,i)=>{const c=ui.cards[i],cd=P.cd[i],out=P.uses[i]<=0;c.classList.toggle('casting',!!(P.cast&&P.cast.i===i));c.classList.toggle('spent',out);
+    c.querySelector('.cdov').style.setProperty('--p',(out?360:cd/spCd(sp)*360)+'deg');c.querySelector('.cdt').textContent=out?'0':cd>0?cd.toFixed(1):'';
+    if(sp.uses){const u=c.querySelector('.uses'),txt=`×${P.uses[i]}`;if(u.textContent!==txt)u.textContent=txt;}});
+  ui.pro.classList.toggle('on',P.protego>0);
+  ui.pro.querySelector('.cdov').style.setProperty('--p',(P.protego>0?0:P.protegoCd/PROTEGO_CD*360)+'deg');
+  ui.pro.querySelector('.cdt').textContent=P.protego>0?P.protego.toFixed(1):P.protegoCd>0?Math.ceil(P.protegoCd):'';
+  ui.deck.classList.toggle('frozen',P.frozen>0&&P.stun<=0);ui.deck.classList.toggle('stunned',P.stun>0);
+  const mg=P.mirage>0;document.body.classList.toggle('mirage',mg);
+  if(TOUCH)updateDock(P);
+  // cast seal
+  const c=duel.state==='fight'?P.cast:null;
+  ui.seal.classList.toggle('hide',!c);
+  if(c){
+    if(ui.lastCast!==c){ui.lastCast=c;ui.sealName.innerHTML=`${c.sp.kind?icon(c.sp.kind):''}${c.sp.jp} · ${powLabel(c.sp)}`;ui.seal.classList.toggle('special',!!c.sp.kind);
+      ui.seal.style.setProperty('--c',rgbVar(c.sp.col));
+      ui.sealRunes.innerHTML=c.seal.map(r=>`<div class="rune"><div class="hx"><b>${LABEL[r.k]}</b></div></div>`).join('');}
+    [...ui.sealRunes.children].forEach((el,i)=>{el.classList.toggle('done',i<c.idx);el.classList.toggle('cur',i===c.idx);
+      setGlyph(el.querySelector('b'),LABEL[guideKey(P,c.seal[i].k,i,CAST_KEYS,duel.t,i<c.idx)]);});
+    ui.sealT.style.width=(c.t/c.limit*100)+'%';
+  }
+  const k=duel.state==='fight'?P.counter:null;
+  ui.ctr.classList.toggle('hide',!k);ui.seal.classList.toggle('low',!!k);
+  if(k){
+    if(ui.lastCtr!==k){ui.lastCtr=k;const bk=k.bolt.kind;
+      ui.ctrSub.innerHTML=`INCOMING · ${bk?icon(bk):''}${k.bolt.sp.en.toUpperCase()} · POWER ${k.bolt.power}${bk?` <em>— 被弾で${k.bolt.sp.tag}</em>`:''}`;
+      ui.ctrRunes.innerHTML=k.seal.map(r=>`<div class="arw">${LABEL[r.k]}</div>`).join('');}
+    [...ui.ctrRunes.children].forEach((el,i)=>{el.classList.toggle('done',i<k.idx);el.classList.toggle('cur',i===k.idx);
+      setGlyph(el,LABEL[guideKey(P,k.seal[i].k,i+3,CTR_KEYS,duel.t,i<k.idx)]);});
+    ui.ctrT.style.width=(k.t/k.limit*100)+'%';
+    ui.ctrQ.textContent=P.queue.length?`後続 ${P.queue.length} 発が待機中`:(P.protegoCd<=0&&k.bolt.power<=10?(document.body.classList.contains('touch')?'プロテゴのカードで即無効化':'SPACE：プロテゴで即無効化'):'');
+  }
+}
+
+/* phone dock: cast seal shows as 1–4 (gold panel), counter seal as arrows (crimson panel) */
+const TOUCH_DIGIT={KeyQ:'1',KeyE:'2',KeyZ:'3',KeyC:'4'};
+/* Mirage Curse: while it lasts, each pending guide glyph flickers between the true key and decoys.
+   Input is still judged against the true seal — only what the victim *sees* is scrambled. */
+function guideKey(s,k,i,pool,t,done){
+  if(done||!(s.mirage>0)) return k;
+  const f=Math.floor(t*3.2)+i*5, h=Math.abs(Math.sin(f*12.9898+i*78.233)*43758.5453)%1;
+  if(h<.42) return k;
+  const alt=pool.filter(x=>x!==k); return alt[Math.floor(h*977)%alt.length];
+}
+function setGlyph(el,txt){if(el&&el.textContent!==txt)el.textContent=txt;}
+function fillStrip(el,seal,idx,label,key,pool,off){
+  if(el._k!==key){el._k=key;el.innerHTML=seal?seal.map(r=>`<i>${label(r.k)}</i>`).join(''):`<span class="ph">${el.dataset.ph}</span>`;}
+  if(seal)[...el.children].forEach((c,i)=>{c.classList.toggle('done',i<idx);c.classList.toggle('cur',i===idx);
+    setGlyph(c,label(guideKey(duel.S.P,seal[i].k,i+off,pool,duel.t,i<idx)));});
+}
+function updateDock(P){
+  const c=duel.state==='fight'?P.cast:null,k=duel.state==='fight'?P.counter:null;
+  ui.runePad.classList.toggle('idle',!c||P.stun>0);ui.castPanel.classList.toggle('live',!!c);
+  ui.arrowPad.classList.toggle('idle',!k||P.stun>0);ui.ctrPanel.classList.toggle('live',!!k);
+  fillStrip(ui.castStrip,c&&c.seal,c?c.idx:0,x=>TOUCH_DIGIT[x],c,CAST_KEYS,0);
+  fillStrip(ui.ctrStrip,k&&k.seal,k?k.idx:0,x=>LABEL[x],k,CTR_KEYS,3);
+  ui.castT.style.width=c?(c.t/c.limit*100)+'%':'0';ui.ctrT2.style.width=k?(k.t/k.limit*100)+'%':'0';
+}
+function press(code){
+  SFX.init();
+  if(!duel||duel.state!=='fight')return;
+  const P=duel.S.P;
+  const sel=code.startsWith('Select')?+code.slice(6):SELECT_KEYS.indexOf(code);
+  if(sel>=0){duel.select('P',sel);}
+  else if(CTR_KEYS.includes(code)){if(P.counter)duel.counterKey('P',code);}
+  else if(CAST_KEYS.includes(code)){if(P.cast)duel.castKey('P',code);}
+  else if(code==='Space')duel.protego('P');
+  else if(code==='Escape')duel.cancel('P');
+}
+addEventListener('keydown',e=>{
+  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
+  if(e.repeat)return;SFX.init();
+  if((!duel||duel.state!=='fight')&&e.code==='Enter'){if(!$('#menu').classList.contains('hide')&&chosen.length===4)startDuel();else if(!$('#result').classList.contains('hide'))($('#next').classList.contains('hide')?startDuel:$('#next').onclick)();return;}
+  press(e.code);
+});
+for(const b of document.querySelectorAll('#dock .pbtn')){
+  b.addEventListener('pointerdown',e=>{e.preventDefault();press(b.dataset.code);b.classList.add('hit');setTimeout(()=>b.classList.remove('hit'),90);});
+}
+const TOUCH=window.matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>0;
+document.body.classList.toggle('touch',TOUCH);
+if(TOUCH){
+  Object.assign(ui,{castPanel:$('#castPanel'),ctrPanel:$('#ctrPanel'),castStrip:$('#castStrip'),ctrStrip:$('#ctrStrip'),castT:$('#castT'),ctrT2:$('#ctrT2')});
+  ui.castStrip.dataset.ph='カードをタップして詠唱';ui.ctrStrip.dataset.ph='敵弾が距離10で発動';
+  $('#dock').prepend(ui.deck); // spell cards live in the dock, out of the battle area
+}
+addEventListener('resize',resize);
+
+let last=performance.now(),T=0;
+function frame(now){
+  const raw=Math.min(.05,(now-last)/1000);last=now;T+=raw;
+  let ts=1;if(R.hitstop>0){R.hitstop-=raw;ts=.12;}
+  if(duel&&duel.state==='ko')ts=.35;
+  if(duel)duel.update(raw*ts);
+  updateFX(raw*(R.hitstop>0?.3:1)*(duel&&duel.state==='ko'?.5:1)*(duel&&duel.S.P.counter?.5:1));
+  render(T,raw);
+  if(duel)updateUI(raw);
+  requestAnimationFrame(frame);
+}
+
+/* boot */
+resize();buildMenu();buildStages();
+(()=>{const r=runSelfTests(),ok=r.filter(x=>x.ok).length,el=$('#selftest');window.selfTestResults=r;
+  el.textContent=`SELF-TEST ${ok}/${r.length} ${ok===r.length?'PASSED ✓':'FAILED ✕'}`;el.classList.toggle('bad',ok!==r.length);
+  el.title=r.map(x=>`${x.ok?'✓':'✕'} ${x.name}${x.msg?' — '+x.msg:''}`).join('\n');
+  console.table(r);})();
+window.runSelfTests=runSelfTests;
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
