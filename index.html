@@ -336,13 +336,13 @@ body.touch .pw.inf{font-size:12px!important;top:5px!important}
 <div id="hud" class="hide">
   <div class="plate p glass">
     <div class="row1"><span class="tag">YOU</span><span class="pname">黎明の魔銃士<small>DAWN HEXSLINGER</small></span></div>
-    <div class="hpwrap"><div class="hpbar"><div class="ghost" id="gP"></div><div class="fill" id="fP"></div></div><div class="hpnum" id="nP">150</div></div>
+    <div class="hpwrap"><div class="hpbar"><div class="ghost" id="gP"></div><div class="fill" id="fP"></div></div><div class="hpnum" id="nP">100</div></div>
     <div class="status" id="sP"></div>
   </div>
   <div id="mid"><div class="duel">DUEL</div><div class="sub">DISTANCE 50</div><div class="inc" id="inc"></div></div>
   <div class="plate e glass">
     <div class="row1"><span class="tag">RIVAL</span><span class="pname" id="eName">黄昏の魔弾卿 ヴァルド<small>DUSK WARLOCK</small></span></div>
-    <div class="hpwrap"><div class="hpbar"><div class="ghost" id="gE"></div><div class="fill" id="fE"></div></div><div class="hpnum" id="nE">150</div></div>
+    <div class="hpwrap"><div class="hpbar"><div class="ghost" id="gE"></div><div class="fill" id="fE"></div></div><div class="hpnum" id="nE">100</div></div>
     <div class="status" id="sE"></div>
   </div>
 </div>
@@ -474,7 +474,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const rgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
 
-const DIST=50, ZONE=10, MAXHP=150, FREEZE=1.4, PROTEGO_DUR=5, PROTEGO_CD=16, PROTEGO_MAX=10, STRIKE_SPEED=75, COUNTER_SLOW=.35;
+const DIST=50, ZONE=10, MAXHP=100, FREEZE=1.4, PROTEGO_DUR=5, PROTEGO_CD=16, PROTEGO_MAX=10, STRIKE_SPEED=75, COUNTER_SLOW=.35;
 // seal keys (left hand): Q E / Z C
 const CAST_KEYS=['KeyQ','KeyE','KeyZ','KeyC'];
 const SELECT_KEYS=['Digit1','Digit2','Digit3','Digit4']; // spell select
@@ -485,7 +485,7 @@ const SPELLS=[
   {id:'ember',  jp:'エンバー・ダート',   en:'Ember Dart',      power:10,speed:20,  col:[255,138,48], core:[255,240,200],style:'ember'},
   {id:'frost',  jp:'フロスト・ランス',   en:'Frost Lance',     power:20,speed:17,  col:[110,185,255],core:[235,248,255],style:'frost'},
   {id:'thunder',jp:'サンダー・ピール',   en:'Thunder Peal',    power:30,speed:14.5,col:[160,130,255],core:[240,235,255],style:'thunder'},
-  {id:'comet',  jp:'デッドマンズ・コメット',en:"Dead Man's Comet",power:50,speed:10.5,col:[255,196,80],core:[255,255,235],style:'comet'},
+  {id:'comet',  jp:'デッドマンズ・コメット',en:"Dead Man's Comet",power:50,speed:10.5,col:[255,196,80],core:[255,255,235],style:'comet',cd:8},
   // ---- 特殊魔法 (kind) — seal: 印数の固定, cd: 再使用, uses: 1試合の回数制限 ----
   {id:'breaker',jp:'ナル・ブレイカー',   en:'Null Breaker',    power:0, speed:19,  col:[235,240,255],core:[255,255,255],style:'breaker',kind:'breaker',seal:4,cd:8.5,
    tag:'潰し',desc:'威力 極大（相殺専用）。どんな魔弾も衝突で消し去り、貫通弾も捕える。本体ダメージ 0'},
@@ -493,12 +493,12 @@ const SPELLS=[
    tag:'スタン',desc:"命中で 2秒スタン（詠唱・印・プロテゴ不可）。1試合 5回まで"},
   {id:'phantom',jp:'ファントム・ピアス', en:'Phantom Pierce',  power:20,speed:15,  col:[200,160,255],core:[248,240,255],style:'phantom',kind:'phantom',seal:5,cd:6.5,
    tag:'貫通',desc:'敵の魔弾と相殺せず、すり抜けて直進する。ナル・ブレイカーにだけは捕まる'},
-  {id:'drain',  jp:'ブラッド・ドレイン', en:'Blood Drain',     power:20,speed:15,  col:[230,40,130], core:[255,205,228],style:'drain',kind:'drain',seal:4,cd:5.5,
-   tag:'吸収',desc:'命中でダメージの半分、相殺で消した敵威力の半分をHP回復。満タン時はプロテゴ再使用を短縮'},
+  {id:'drain',  jp:'ブラッド・ドレイン', en:'Blood Drain',     power:20,speed:15,  col:[230,40,130], core:[255,205,228],style:'drain',kind:'drain',seal:4,cd:6.5,
+   tag:'吸収',desc:'命中でダメージの35%、相殺で消した敵威力の35%をHP回復。満タン時はプロテゴ再使用を短縮'},
   {id:'mirage', jp:'ミラージュ・カース', en:'Mirage Curse',    power:20,speed:17,  col:[70,255,170], core:[225,255,240],style:'mirage',kind:'mirage',seal:4,cd:5,
    tag:'攪乱',desc:'命中で 4秒間、相手の印のガイドを幻惑・シャッフルし入力ミスを誘う'},
 ];
-const STUN_DUR=2, MIRAGE_DUR=4, DRAIN_RATE=.5, DRAIN_CD_CUT=3;
+const STUN_DUR=2, MIRAGE_DUR=4, DRAIN_RATE=.35, DRAIN_CD_CUT=3;
 const KIND_ICON={ // 24x24 line icons for special spells
   breaker:'<path d="M12 2.5 20 6v6c0 5-3.6 8.3-8 9.5C7.6 20.3 4 17 4 12V6z"/><path d="m8.5 8.5 7 7m0-7-7 7"/>',
   stun:'<path d="M13.5 2 6 13h5l-1.5 9L18 10.5h-5z"/>',
@@ -791,9 +791,9 @@ function runSelfTests(){
     return (c&&c.bolt===e&&e.pos===ZONE&&c.seal.length===2&&c.seal.every(x=>CTR_KEYS.includes(x.k)))||'no counter';});
   T('反魔法 成功 → 無傷で弾を破壊',()=>{const d=mk();put(d,'E',30,12);run(d,.3);for(const r of d.S.P.counter.seal) d.counterKey('P',r.k);run(d,2);
     return (d.S.P.hp===MAXHP&&d.bolts.length===0&&d.c.counterOK===1)||`hp=${d.S.P.hp}`;});
-  T('反魔法 入力ミス → 威力ぶん直撃 (150-30=120)',()=>{const d=mk();put(d,'E',30,12);run(d,.3);d.counterKey('P',wrongArrow(d.S.P.counter.seal[0].k));run(d,1.5);
-    return d.S.P.hp===120||`hp=${d.S.P.hp}`;});
-  T('反魔法 時間切れ → 直撃',()=>{const d=mk();put(d,'E',40,12);run(d,4);return d.S.P.hp===110||`hp=${d.S.P.hp}`;});
+  T('反魔法 入力ミス → 威力ぶん直撃 (100-30=70)',()=>{const d=mk();put(d,'E',30,12);run(d,.3);d.counterKey('P',wrongArrow(d.S.P.counter.seal[0].k));run(d,1.5);
+    return d.S.P.hp===MAXHP-30||`hp=${d.S.P.hp}`;});
+  T('反魔法 時間切れ → 直撃',()=>{const d=mk();put(d,'E',40,12);run(d,4);return d.S.P.hp===MAXHP-40||`hp=${d.S.P.hp}`;});
   T('プロテゴ：威力10の弾を印なしで自動無効化',()=>{const d=mk();d.protego('P');put(d,'E',10,16);run(d,2);
     return (d.S.P.hp===MAXHP&&!d.S.P.counter&&d.bolts.length===0&&d.c.protegoBlock===1&&!d.c.counterStart)||`hp=${d.S.P.hp}`;});
   T('プロテゴ：相殺後の余剰威力10以下（自15 vs 敵25→10）も無効化',()=>{const d=mk();d.protego('P');put(d,'P',15,24);put(d,'E',25,26);run(d,3);
@@ -820,7 +820,7 @@ function runSelfTests(){
     for(const r of d.S.P.counter.seal) d.counterKey('P',r.k);for(const r of d.S.P.cast.seal) d.castKey('P',r.k);
     return d.S.P.hp===MAXHP&&d.bolts.length===1&&d.bolts[0].owner==='P';});
   T('対称性：自弾が距離40（敵から10）で敵の反魔法へ、失敗で敵HP減少',()=>{const d=mk();put(d,'P',30,36);run(d,.4);if(!d.S.E.counter) return 'no E counter';
-    run(d,3);return d.S.E.hp===120||`hp=${d.S.E.hp}`;});
+    run(d,3);return d.S.E.hp===MAXHP-30||`hp=${d.S.E.hp}`;});
   T('HP0で決着',()=>{const d=mk();d.S.P.hp=20;put(d,'E',25,12);run(d,4);return d.state==='ko'&&d.loser==='P';});
   T('10ステージ：成功率（印・反魔法）とスピード（1印の秒数・間合い）がステージごとに厳しくなる',()=>{
     if(STAGES.length!==10) return `${STAGES.length} stages`;
@@ -842,11 +842,11 @@ function runSelfTests(){
   T('貫通：自20 vs 敵40 → 相殺せず両弾が直進、双方が反魔法へ',()=>{const d=mk();const p=put(d,'P',20,24,15,'phantom'),e=put(d,'E',40,26);run(d,.3);
     if(!(d.bolts.length===2&&d.c.pierce===1&&!d.c.clash&&p.power===20&&e.power===40)) return JSON.stringify(d.c);
     run(d,1.5);if(!d.S.E.counter||d.S.E.counter.bolt!==p) return 'phantom did not reach the rival zone';
-    run(d,3);return (d.S.E.hp===130&&d.S.P.hp===110)||`E=${d.S.E.hp} P=${d.S.P.hp}`;});
+    run(d,3);return (d.S.E.hp===MAXHP-20&&d.S.P.hp===MAXHP-40)||`E=${d.S.E.hp} P=${d.S.P.hp}`;});
   T('貫通：連鎖でも全弾すり抜け、通常弾同士は従来どおり相殺',()=>{const d=mk();const p=put(d,'P',20,22,15,'phantom');put(d,'P',30,18);put(d,'E',15,26);put(d,'E',10,30);run(d,.6);
     return (p.power===20&&d.c.pierce>=2&&d.c.clash>=1)||JSON.stringify(d.c);});
   T('スタン：命中で詠唱中断・選択/印/プロテゴ不可 → 2秒で回復',()=>{const d=mk();put(d,'E',15,11,15,'stun');run(d,.2);failCounter(d)('P');d.select('P',0);run(d,.6);
-    const P=d.S.P;if(!(P.hp===135&&P.stun>0&&!P.cast&&d.c.stun===1)) return `hp=${P.hp} stun=${P.stun}`;
+    const P=d.S.P;if(!(P.hp===MAXHP-15&&P.stun>0&&!P.cast&&d.c.stun===1)) return `hp=${P.hp} stun=${P.stun}`;
     if(d.select('P',1)||d.protego('P')) return 'acted while stunned';run(d,STUN_DUR);return d.select('P',1);});
   T('スタン：反魔法で消せば効果なし',()=>{const d=mk();put(d,'E',15,11,15,'stun');run(d,.2);for(const r of d.S.P.counter.seal) d.counterKey('P',r.k);run(d,1);
     return (d.S.P.stun===0&&d.S.P.hp===MAXHP)||'stunned anyway';});
@@ -858,15 +858,15 @@ function runSelfTests(){
     return (d.S.P.uses[0]===0&&!d.select('P',0)&&d.c.launch===5)||`uses=${d.S.P.uses[0]}`;});
   T('スタン：相殺で勝てば余剰威力のままスタン効果を保持',()=>{const d=mk();put(d,'P',15,24,18,'stun');put(d,'E',10,26);run(d,.2);
     const b=d.bolts[0];return (d.bolts.length===1&&b.kind==='stun'&&b.power===5)||'kind lost';});
-  T('ドレイン：命中でダメージの半分を回復 (自100→110 / 敵150→130)',()=>{const d=mk();d.S.P.hp=100;put(d,'P',20,36,15,'drain');run(d,3.5);
-    return (d.S.E.hp===130&&d.S.P.hp===110&&d.c.drain===1)||`E=${d.S.E.hp} P=${d.S.P.hp}`;});
-  T('ドレイン：相殺で消した敵威力の半分を回復 (20 vs 15 → +8)',()=>{const d=mk();d.S.P.hp=100;put(d,'P',20,24,15,'drain');put(d,'E',15,26);run(d,.2);
-    return (d.S.P.hp===108&&d.bolts[0].power===5)||`P=${d.S.P.hp}`;});
+  T('ドレイン：命中でダメージの35%を回復 (自60→67 / 敵100→80)',()=>{const d=mk();d.S.P.hp=60;put(d,'P',20,36,15,'drain');run(d,3.5);
+    return (d.S.E.hp===MAXHP-20&&d.S.P.hp===67&&d.c.drain===1)||`E=${d.S.E.hp} P=${d.S.P.hp}`;});
+  T('ドレイン：相殺で消した敵威力の35%を回復 (20 vs 15 → +5)',()=>{const d=mk();d.S.P.hp=60;put(d,'P',20,24,15,'drain');put(d,'E',15,26);run(d,.2);
+    return (d.S.P.hp===65&&d.bolts[0].power===5)||`P=${d.S.P.hp}`;});
   T('ドレイン：HP満タン時は溢れた分でプロテゴ再使用を3秒短縮',()=>{const d=mk();d.protego('P');run(d,1);const cd=d.S.P.protegoCd;d.drain(d.S.P,10,null);
     return (d.S.P.hp===MAXHP&&Math.abs(d.S.P.protegoCd-(cd-DRAIN_CD_CUT))<1e-6)||`cd ${cd}→${d.S.P.protegoCd}`;});
-  T('ドレイン：相殺に負けたら回復なし',()=>{const d=mk();d.S.P.hp=100;put(d,'P',20,24,15,'drain');put(d,'E',30,26);run(d,.2);return d.S.P.hp===100;});
+  T('ドレイン：相殺に負けたら回復なし',()=>{const d=mk();d.S.P.hp=60;put(d,'P',20,24,15,'drain');put(d,'E',30,26);run(d,.2);return d.S.P.hp===60;});
   T('攪乱：命中で4秒間ガイドが幻惑（真の印と偽の印が入れ替わる）',()=>{const d=mk();put(d,'E',15,11,15,'mirage');run(d,.2);failCounter(d)('P');run(d,.6);
-    const P=d.S.P;if(!(P.mirage>0&&P.hp===135)) return `mirage=${P.mirage}`;
+    const P=d.S.P;if(!(P.mirage>0&&P.hp===MAXHP-15)) return `mirage=${P.mirage}`;
     let real=0,fake=0;for(let t=0;t<4;t+=.05){guideKey(P,'KeyQ',0,CAST_KEYS,t)==='KeyQ'?real++:fake++;}
     if(!(real>8&&fake>8)) return `real ${real} fake ${fake}`;
     P.mirage=0;return guideKey(P,'KeyQ',0,CAST_KEYS,1)==='KeyQ';});
